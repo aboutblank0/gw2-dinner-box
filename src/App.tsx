@@ -1,16 +1,23 @@
 import { useEffect, useState } from "react";
 import { Material, PhilosopherStone } from "./constants/materials";
-import { fetchGW2Items, fetchGW2ItemsListings, type GW2Item } from "./api/gw2";
+import {
+  fetchGW2Items,
+  fetchGW2ItemsListings,
+  type GW2Item,
+  type GW2ItemListing,
+  type GW2TradeListing,
+} from "./api/gw2";
 import { FangRecipe, type MaterialRecipe } from "./constants/recipes";
 import GW2ItemDisplay from "./components/GW2ItemDisplay";
+import { getPriceSummary } from "./util/marketUtil";
 
 function App() {
-  const [items, setItems] = useState<Record<number, GW2Item>>({});
-  const [prices, setPrices] = useState<Record<number, number>>({});
+  const [items, setItems] = useState<Record<number, GW2Item>>();
 
   const allMaterialIds = Object.values(Material)
     .flatMap((tiers) => Object.values(tiers))
     .map((item) => item.id);
+
   allMaterialIds.push(PhilosopherStone.id);
 
   useEffect(() => {
@@ -30,7 +37,15 @@ function App() {
     async function fetchPrices() {
       try {
         const prices = await fetchGW2ItemsListings(allMaterialIds);
-        setPrices(prices);
+        setItems((prev) => {
+          const updatedItems = { ...prev };
+          for (const id in prices) {
+            if (updatedItems[id]) {
+              updatedItems[id].price = getPriceSummary(prices[id].sells || []);
+            }
+          }
+          return updatedItems;
+        });
       } catch (error) {
         console.error("Error fetching GW2 item prices:", error);
       }
@@ -40,6 +55,7 @@ function App() {
     fetchPrices();
   }, []);
 
+  if (!items) return null;
   return (
     <div className='p-8'>
       <RecipeDisplay items={items} />
@@ -83,6 +99,9 @@ function RecipeDisplay({ items }: { items: Record<number, GW2Item> }) {
             <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
               Ingredients
             </th>
+            <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+              Output
+            </th>
           </tr>
         </thead>
         <tbody className='bg-white divide-y divide-gray-200'>
@@ -107,11 +126,12 @@ function RecipeRow({ recipe, items }: RecipeRowProps) {
       <td className='px-6 py-4 whitespace-nowrap'>
         {recipe.ingredients.map((ing) => {
           const item = items[ing.materialId];
-          return <GW2ItemDisplay item={item} amount={ing.quantity} />;
+          return (
+            <GW2ItemDisplay key={item.id} item={item} amount={ing.quantity} />
+          );
         })}
       </td>
       <td className='px-6 py-4 whitespace-nowrap'>
-        <span>Output:</span>
         <GW2ItemDisplay
           item={items[recipe.output.materialId]}
           amount={recipe.output.quantity}

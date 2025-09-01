@@ -1,4 +1,5 @@
 import type { GW2Item } from "../api/gw2";
+import GW2PriceDisplay from "./GW2PriceDisplay";
 
 interface GW2ItemDisplayProps {
   item: GW2Item;
@@ -21,6 +22,7 @@ function GW2ItemDisplay({ item, amount = 1 }: GW2ItemDisplayProps) {
       )}
       <div className='absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10 shadow-lg'>
         {item.name} ({item.id})
+        <br />
       </div>
     </div>
   );

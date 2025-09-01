@@ -1,3 +1,5 @@
+import type { PriceSummary } from "../util/marketUtil";
+
 export type GW2Item = {
   id: number;
   name: string;
@@ -5,6 +7,19 @@ export type GW2Item = {
   description?: string;
   type?: string;
   rarity?: string;
+  price?: PriceSummary;
+};
+
+export type GW2ItemListing = {
+  id: number;
+  buys?: GW2TradeListing[];
+  sells?: GW2TradeListing[];
+};
+
+export type GW2TradeListing = {
+  unit_price: number;
+  quantity: number;
+  listings: number;
 };
 
 const BASE_URL = "https://api.guildwars2.com/v2";
@@ -31,7 +46,7 @@ export async function fetchGW2Items(ids: number[]): Promise<GW2Item[]> {
 
 export async function fetchGW2ItemsListings(
   ids: number[]
-): Promise<Record<number, number>> {
+): Promise<Record<number, GW2ItemListing>> {
   if (ids.length === 0) return {};
 
   const idsParam = ids.join(",");
@@ -41,11 +56,15 @@ export async function fetchGW2ItemsListings(
 
   const response = await fetch(url);
   if (!response.ok) {
-    throw new Error(`Failed to fetch GW2 item listings: ${response.statusText}`);
+    throw new Error(
+      `Failed to fetch GW2 item listings: ${response.statusText}`
+    );
   }
-  const test = await response.json();
-  console.log(test);
+  const data = await response.json();
 
-  const data: Array<{ id: number; price: number }> = test;
-  return Object.fromEntries(data.map(({ id, price }) => [id, price]));
+  const listingsMap: Record<number, GW2ItemListing> = {};
+  data.forEach((listing: GW2ItemListing) => {
+    listingsMap[listing.id] = listing;
+  });
+  return listingsMap;
 }
