@@ -1,5 +1,3 @@
-import type { PriceSummary } from "../util/marketUtil";
-
 export type GW2Item = {
   id: number;
   name: string;
@@ -7,7 +5,6 @@ export type GW2Item = {
   description?: string;
   type?: string;
   rarity?: string;
-  price?: PriceSummary;
 };
 
 export type GW2ItemListing = {

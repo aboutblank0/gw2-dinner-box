@@ -1,46 +1,55 @@
-import type { GW2TradeListing } from "../api/gw2";
+import type { GW2ItemListing, GW2TradeListing } from "../api/gw2";
+
+export type PriceType = "instant" | "listing";
 
 export type PriceSummary = {
-  weightedAverage: number;
-  weightedTop: number;
+  buyPrice: number;
+  sellPrice: number;
 };
 
-export function getPriceSummary(listings: GW2TradeListing[]): PriceSummary {
-  return {
-    weightedAverage: weightedAverageSellPrice(listings),
-    weightedTop: weightedTopPercentage(listings),
-  };
+export function getPrice(
+  prices: PriceSummary | undefined,
+  type: PriceType
+): number {
+  if (!prices) return -1000;
+  return type === "instant" ? prices.sellPrice : prices.buyPrice;
 }
 
-export function weightedAverageSellPrice(listings: GW2TradeListing[]): number {
-  let totalValue = 0;
-  let totalQuantity = 0;
+export function getPriceSummary(
+  listings: Record<number, GW2ItemListing>,
+  depth: number = 100
+): Record<number, PriceSummary> {
+  const summary: Record<number, PriceSummary> = {};
 
-  for (const l of listings) {
-    totalValue += l.unit_price * l.quantity;
-    totalQuantity += l.quantity;
+  for (const [itemIdStr, listing] of Object.entries(listings)) {
+    const itemId = parseInt(itemIdStr, 10);
+    const buyListings = listing.buys || [];
+    const sellListings = listing.sells || [];
+
+    const buyPrice = weightedTopPercentage(buyListings, depth);
+    const sellPrice = weightedTopPercentage(sellListings, depth);
+
+    summary[itemId] = {
+      buyPrice: buyPrice > 0 ? buyPrice : -1000,
+      sellPrice: sellPrice > 0 ? sellPrice : -1000,
+    };
   }
-
-  const final = totalQuantity > 0 ? totalValue / totalQuantity : 0;
-  return parseFloat(final.toFixed(2));
+  return summary;
 }
 
 export function weightedTopPercentage(
   listings: GW2TradeListing[],
-  percent = 0.1
+  depth: number
 ): number {
   const sorted = [...listings].sort((a, b) => a.unit_price - b.unit_price);
-  const totalQuantity = sorted.reduce((sum, l) => sum + l.quantity, 0);
-  const cutoff = totalQuantity * percent;
-
   let accQuantity = 0;
   let accValue = 0;
 
   for (const l of sorted) {
-    if (accQuantity >= cutoff) break;
-    const qty = Math.min(l.quantity, cutoff - accQuantity);
+    const qty = Math.min(l.quantity, depth - accQuantity);
     accValue += l.unit_price * qty;
     accQuantity += qty;
+    if (accQuantity >= depth) break;
   }
 
   const final = accQuantity > 0 ? accValue / accQuantity : 0;

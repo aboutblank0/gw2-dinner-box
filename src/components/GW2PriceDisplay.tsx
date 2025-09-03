@@ -3,12 +3,16 @@ import SilverCurrency from "./../assets/images/Silver_coin.png";
 import CopperCurrency from "./../assets/images/Copper_coin.png";
 
 function GW2PriceDisplay({ price }: { price: number }) {
-  const gold = Math.floor(price / 10000);
-  const silver = Math.floor((price % 10000) / 100);
-  const copper = parseFloat((price % 100).toFixed(0));
+  const isNegative = price < 0;
+  const absolutePrice = Math.abs(price);
+
+  const gold = Math.floor(absolutePrice / 10000);
+  const silver = Math.floor((absolutePrice % 10000) / 100);
+  const copper = parseFloat((absolutePrice % 100).toFixed(0));
 
   return (
-    <div className='flex items-center'>
+    <div className={`flex items-center ${isNegative ? "text-red-500" : ""}`}>
+      {isNegative && <span className='mr-1'>-</span>}
       {gold > 0 && (
         <>
           <img src={GoldCurrency} alt='Gold' className='w-4 h-4 mr-1' />
