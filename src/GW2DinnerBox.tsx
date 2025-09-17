@@ -3,11 +3,7 @@ import { useGlobalContext } from "./components/GlobalContext";
 import GW2ItemDisplay from "./components/GW2ItemDisplay";
 import GW2PriceDisplay from "./components/GW2PriceDisplay";
 import { PhilosopherStone } from "./constants/materials";
-import {
-  ClawRecipe,
-  FangRecipe,
-  type MaterialRecipe,
-} from "./constants/recipes";
+import { AllRecipes, type MaterialRecipe } from "./constants/recipes";
 import type { PriceType } from "./util/marketUtil";
 
 function GW2DinnerBox() {
@@ -96,10 +92,6 @@ function PriceTypeSelector({
 }
 
 function RecipeDisplay() {
-  const recipes = [];
-  recipes.push(FangRecipe);
-  recipes.push(ClawRecipe);
-
   return (
     <div className='overflow-x-auto'>
       <table className='min-w-full divide-y divide-gray-200'>
@@ -126,7 +118,7 @@ function RecipeDisplay() {
           </tr>
         </thead>
         <tbody className='bg-white divide-y divide-gray-200'>
-          {recipes.map((recipe, index) => (
+          {AllRecipes.map((recipe, index) => (
             <RecipeRow key={index} recipe={recipe} />
           ))}
         </tbody>

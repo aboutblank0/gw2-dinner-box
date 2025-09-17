@@ -3,14 +3,22 @@ export type Material = {
   name: string;
 };
 
-type Tier = `T${1 | 2 | 3 | 4 | 5 | 6}`;
+export const MATERIAL_GROUPS = [
+  "Blood",
+  "Bone",
+  "Claw",
+  "Fang",
+  "Scale",
+  "Totem",
+  "Venom",
+  "Dust",
+];
+type MaterialGroup = (typeof MATERIAL_GROUPS)[number];
 
-type MaterialGroup = Record<Tier, Material>;
+export const MATERIAL_TIERS = ["T1", "T2", "T3", "T4", "T5", "T6"];
+type MaterialTier = (typeof MATERIAL_TIERS)[number];
 
-export const Material: Record<
-  "Blood" | "Bone" | "Claw" | "Fang" | "Scale" | "Totem" | "VenomSac" | "Dust",
-  MaterialGroup
-> = {
+export const Material: Record<MaterialGroup, Record<MaterialTier, Material>> = {
   Blood: {
     T1: { id: 24290, name: "Vial of Weak Blood" },
     T2: { id: 24291, name: "Vial of Thin Blood" },
@@ -59,7 +67,7 @@ export const Material: Record<
     T5: { id: 24299, name: "Intricate Totem" },
     T6: { id: 24300, name: "Elaborate Totem" },
   },
-  VenomSac: {
+  Venom: {
     T1: { id: 24278, name: "Tiny Venom Sac" },
     T2: { id: 24279, name: "Small Venom Sac" },
     T3: { id: 24280, name: "Venom Sac" },
