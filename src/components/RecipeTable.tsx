@@ -1,0 +1,115 @@
+import { PhilosopherStone } from "../constants/materials";
+import { AllRecipes, type MaterialRecipe } from "../constants/recipes";
+import { getPriceByType } from "../util/marketUtil";
+import { useGlobalContext } from "./GlobalContext";
+import GW2ItemDisplay from "./GW2ItemDisplay";
+import GW2PriceDisplay from "./GW2PriceDisplay";
+
+interface RecipeTableProps {
+  tableName: string;
+  recipes: MaterialRecipe[];
+}
+
+export function RecipeTable({ tableName, recipes }: RecipeTableProps) {
+  const headers = [
+    "Ingredients",
+    "Output",
+    "Total Ingredient Cost",
+    "Resulting Sale Price",
+    "Profit (After Tax)",
+    "Profit per shard (After tax)",
+  ];
+
+  return (
+    <div className='overflow-x-auto'>
+      <table className='min-w-full divide-y divide-gray-200'>
+        <thead className='bg-gray-50'>
+          <tr>
+            {headers.map((header) => (
+              <th
+                key={header}
+                className='px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+              >
+                {header}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className='bg-white divide-y divide-gray-200'>
+          {recipes.map((recipe, index) => (
+            <RecipeRow key={index} recipe={recipe} />
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+interface RecipeRowProps {
+  recipe: MaterialRecipe;
+}
+
+function RecipeRow({ recipe }: RecipeRowProps) {
+  const { items, prices, ingredientPriceType, resultPriceType } =
+    useGlobalContext();
+
+  if (!items || !prices) return null;
+
+  //get the total price for buy listing of all ingredients
+  const totalPrice = recipe.ingredients.reduce((sum, ing) => {
+    if (!prices[ing.materialId]) return sum;
+
+    const price = getPriceByType(prices, ing.materialId, ingredientPriceType);
+    return sum + price * ing.quantity;
+  }, 0);
+
+  const philosophersUsed = recipe.ingredients.find(
+    (ing) => ing.materialId === PhilosopherStone.id
+  )?.quantity;
+
+  const totalRevenue =
+    getPriceByType(prices, recipe.output.materialId, resultPriceType) *
+    recipe.output.quantity;
+
+  const totalProfit = totalRevenue * 0.85 - totalPrice;
+
+  //1 spirit shard = 10 philosophers stones
+  const profitPerShard = philosophersUsed
+    ? totalProfit / (philosophersUsed / 10)
+    : totalProfit;
+
+  return (
+    <tr>
+      <td className='px-6 py-4 whitespace-nowrap flex flex-row'>
+        {recipe.ingredients.map((ing) => {
+          const item = items[ing.materialId];
+
+          if (item.id === PhilosopherStone.id) {
+            console.log(ing.quantity);
+          }
+          return (
+            <GW2ItemDisplay key={item.id} item={item} amount={ing.quantity} />
+          );
+        })}
+      </td>
+      <td className='px-6 py-4 whitespace-nowrap'>
+        <GW2ItemDisplay
+          item={items[recipe.output.materialId]}
+          amount={recipe.output.quantity}
+        />
+      </td>
+      <td className='px-6 py-4 whitespace-nowrap'>
+        <GW2PriceDisplay price={totalPrice} />
+      </td>
+      <td className='px-6 py-4 whitespace-nowrap'>
+        <GW2PriceDisplay price={totalRevenue} />
+      </td>
+      <td className='px-6 py-4 whitespace-nowrap'>
+        <GW2PriceDisplay price={totalProfit} />
+      </td>
+      <td className='px-6 py-4 whitespace-nowrap'>
+        <GW2PriceDisplay price={profitPerShard} />
+      </td>
+    </tr>
+  );
+}
