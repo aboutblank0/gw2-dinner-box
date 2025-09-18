@@ -2,9 +2,9 @@ import { useState } from "react";
 import { useGlobalContext } from "./components/GlobalContext";
 import GW2ItemDisplay from "./components/GW2ItemDisplay";
 import GW2PriceDisplay from "./components/GW2PriceDisplay";
-import { PhilosopherStone } from "./constants/materials";
+import { Materials, PhilosopherStone } from "./constants/materials";
 import { AllRecipes, type MaterialRecipe } from "./constants/recipes";
-import type { PriceType } from "./util/marketUtil";
+import { getPriceByType, type PriceType } from "./util/marketUtil";
 
 function GW2DinnerBox() {
   const {
@@ -13,6 +13,7 @@ function GW2DinnerBox() {
     resultPriceType,
     setIngredientPriceType,
     setResultPriceType,
+    prices,
   } = useGlobalContext();
 
   const [marketDepth, setMarketDepth] = useState(100);
@@ -24,6 +25,16 @@ function GW2DinnerBox() {
       updateItemPrices(value);
     }
   };
+
+  console.log(
+    "Sell price for T6 Dust:",
+    prices?.[Materials.Dust.T6.id].sellPrice
+  );
+
+  console.log(
+    "Buy price for T6 Dust:",
+    prices?.[Materials.Dust.T6.id].buyPrice
+  );
 
   return (
     <div className='p-8'>
@@ -72,20 +83,20 @@ function PriceTypeSelector({
           type='radio'
           name={label}
           value='instant'
-          checked={selected === "instant"}
-          onChange={() => onSelect("instant")}
+          checked={selected === "sells"}
+          onChange={() => onSelect("sells")}
         />
-        instant
+        sells
       </label>
       <label>
         <input
           type='radio'
           name={label}
           value='listing'
-          checked={selected === "listing"}
-          onChange={() => onSelect("listing")}
+          checked={selected === "buys"}
+          onChange={() => onSelect("buys")}
         />
-        listing
+        buys
       </label>
     </>
   );
@@ -113,6 +124,9 @@ function RecipeDisplay() {
               Resulting Sale Price
             </th>
             <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+              Profit (After Tax)
+            </th>
+            <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
               Profit per shard (After tax)
             </th>
           </tr>
@@ -132,7 +146,8 @@ interface RecipeRowProps {
 }
 
 function RecipeRow({ recipe }: RecipeRowProps) {
-  const { items, prices } = useGlobalContext();
+  const { items, prices, ingredientPriceType, resultPriceType } =
+    useGlobalContext();
 
   if (!items || !prices) return null;
 
@@ -140,7 +155,7 @@ function RecipeRow({ recipe }: RecipeRowProps) {
   const totalPrice = recipe.ingredients.reduce((sum, ing) => {
     if (!prices[ing.materialId]) return sum;
 
-    const price = prices[ing.materialId].buyPrice * ing.quantity;
+    const price = getPriceByType(prices, ing.materialId, ingredientPriceType);
     return sum + price * ing.quantity;
   }, 0);
 
@@ -149,12 +164,14 @@ function RecipeRow({ recipe }: RecipeRowProps) {
   )?.quantity;
 
   const totalRevenue =
-    recipe.output.quantity * prices[recipe.output.materialId].sellPrice;
+    getPriceByType(prices, recipe.output.materialId, resultPriceType) *
+    recipe.output.quantity;
+
+  const totalProfit = totalRevenue * 0.85 - totalPrice;
 
   //1 spirit shard = 10 philosophers stones
   const profitPerShard =
-    (totalRevenue * 0.85 - totalPrice) /
-    (philosophersUsed ? philosophersUsed / 10 : 1);
+    totalProfit / (philosophersUsed ? philosophersUsed / 10 : 1);
 
   return (
     <tr>
@@ -178,6 +195,9 @@ function RecipeRow({ recipe }: RecipeRowProps) {
       </td>
       <td className='px-6 py-4 whitespace-nowrap'>
         <GW2PriceDisplay price={totalRevenue} />
+      </td>
+      <td className='px-6 py-4 whitespace-nowrap'>
+        <GW2PriceDisplay price={totalProfit} />
       </td>
       <td className='px-6 py-4 whitespace-nowrap'>
         <GW2PriceDisplay price={profitPerShard} />

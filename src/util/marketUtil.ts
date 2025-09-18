@@ -1,6 +1,6 @@
 import type { GW2ItemListing, GW2TradeListing } from "../api/gw2";
 
-export type PriceType = "instant" | "listing";
+export type PriceType = "buys" | "sells";
 
 export type PriceSummary = {
   buyPrice: number;
@@ -12,7 +12,7 @@ export function getPrice(
   type: PriceType
 ): number {
   if (!prices) return -1000;
-  return type === "instant" ? prices.sellPrice : prices.buyPrice;
+  return type === "sells" ? prices.sellPrice : prices.buyPrice;
 }
 
 export function getPriceSummary(
@@ -30,8 +30,8 @@ export function getPriceSummary(
     const sellPrice = weightedTopPercentage(sellListings, depth);
 
     summary[itemId] = {
-      buyPrice: buyPrice > 0 ? buyPrice : -1000,
-      sellPrice: sellPrice > 0 ? sellPrice : -1000,
+      buyPrice: buyPrice > 0 ? buyPrice : -Infinity,
+      sellPrice: sellPrice > 0 ? sellPrice : -Infinity,
     };
   }
   return summary;
@@ -41,11 +41,10 @@ export function weightedTopPercentage(
   listings: GW2TradeListing[],
   depth: number
 ): number {
-  const sorted = [...listings].sort((a, b) => a.unit_price - b.unit_price);
   let accQuantity = 0;
   let accValue = 0;
 
-  for (const l of sorted) {
+  for (const l of listings) {
     const qty = Math.min(l.quantity, depth - accQuantity);
     accValue += l.unit_price * qty;
     accQuantity += qty;
@@ -54,4 +53,15 @@ export function weightedTopPercentage(
 
   const final = accQuantity > 0 ? accValue / accQuantity : 0;
   return parseFloat(final.toFixed(2));
+}
+
+export function getPriceByType(
+  prices: Record<number, PriceSummary> | undefined,
+  itemId: number,
+  type: PriceType
+): number {
+  if (!prices) return -Infinity;
+  const priceSummary = prices[itemId];
+  if (!priceSummary) return -Infinity;
+  return getPrice(priceSummary, type);
 }

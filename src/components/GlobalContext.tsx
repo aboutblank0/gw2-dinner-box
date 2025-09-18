@@ -5,7 +5,7 @@ import {
   type GW2Item,
   type GW2ItemListing,
 } from "../api/gw2";
-import { Material, PhilosopherStone } from "../constants/materials";
+import { Materials, PhilosopherStone } from "../constants/materials";
 import {
   getPriceSummary,
   type PriceSummary,
@@ -17,11 +17,11 @@ interface GlobalContextType {
   prices?: Record<number, PriceSummary>;
   updateItemPrices: (depth: number) => void;
 
-  ingredientPriceType: "instant" | "listing";
-  setIngredientPriceType: (type: "instant" | "listing") => void;
+  ingredientPriceType: PriceType;
+  setIngredientPriceType: (type: PriceType) => void;
 
-  resultPriceType: "instant" | "listing";
-  setResultPriceType: (type: "instant" | "listing") => void;
+  resultPriceType: PriceType;
+  setResultPriceType: (type: PriceType) => void;
 }
 
 const GlobalContext = React.createContext<GlobalContextType | undefined>(
@@ -45,12 +45,12 @@ export const GlobalProvider: React.FC<React.PropsWithChildren<{}>> = ({
   >(undefined);
 
   const [ingredientPriceType, setIngredientPriceType] =
-    React.useState<PriceType>("listing");
+    React.useState<PriceType>("buys");
 
   const [resultPriceType, setResultPriceType] =
-    React.useState<PriceType>("listing");
+    React.useState<PriceType>("buys");
 
-  const allMaterialIds = Object.values(Material)
+  const allMaterialIds = Object.values(Materials)
     .flatMap((tiers) => Object.values(tiers))
     .map((item) => item.id);
 

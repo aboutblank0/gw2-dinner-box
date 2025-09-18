@@ -1,4 +1,4 @@
-export type Material = {
+export type Materials = {
   id: number;
   name: string;
 };
@@ -13,12 +13,15 @@ export const MATERIAL_GROUPS = [
   "Venom",
   "Dust",
 ];
-type MaterialGroup = (typeof MATERIAL_GROUPS)[number];
+export type MaterialGroup = (typeof MATERIAL_GROUPS)[number];
 
 export const MATERIAL_TIERS = ["T1", "T2", "T3", "T4", "T5", "T6"];
-type MaterialTier = (typeof MATERIAL_TIERS)[number];
+export type MaterialTier = (typeof MATERIAL_TIERS)[number];
 
-export const Material: Record<MaterialGroup, Record<MaterialTier, Material>> = {
+export const Materials: Record<
+  MaterialGroup,
+  Record<MaterialTier, Materials>
+> = {
   Blood: {
     T1: { id: 24290, name: "Vial of Weak Blood" },
     T2: { id: 24291, name: "Vial of Thin Blood" },
@@ -85,7 +88,7 @@ export const Material: Record<MaterialGroup, Record<MaterialTier, Material>> = {
   },
 };
 
-export const PhilosopherStone: Material = {
+export const PhilosopherStone: Materials = {
   id: 20796,
   name: "Philosopher's Stone",
 };
