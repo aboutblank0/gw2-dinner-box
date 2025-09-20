@@ -1,15 +1,15 @@
 import { useState } from "react";
-import { useGlobalContext } from "./components/GlobalContext";
-import { type PriceType } from "./util/marketUtil";
-import { RecipeTable } from "./components/RecipeTable";
 import {
   T1toT2Recipes,
   T2toT3Recipes,
   T3toT4Recipes,
   T4toT5Recipes,
   T5toT6Recipes,
-} from "./constants/recipes";
-import { CollapseGroup } from "./components/CollapseGroup";
+} from "../../constants/recipes";
+import type { PriceType } from "../../util/marketUtil";
+import { CollapseGroup } from "../CollapseGroup";
+import { useGlobalContext } from "../GlobalContext";
+import { RecipeTable } from "../RecipeTable";
 
 function GW2DinnerBox() {
   const {
@@ -31,18 +31,20 @@ function GW2DinnerBox() {
   };
 
   return (
-    <div className='p-8'>
-      <div className='mb-8 flex flex-row gap-4'>
-        <div>
-          <label>Market Depth: </label>
-          <input
-            className='bg-gray-200 rounded p-1 w-20'
-            type='number'
-            value={marketDepth}
-            onChange={handleDepthChange}
-          />
-        </div>
-        <div>
+    <div className='flex flex-row items-start'>
+      <div id='control-bar' className='mb-8 gap-4 min-w-64 sticky top-0'>
+        <div className='flex flex-col gap-4 p-4'>
+          <div id='market-depth' className='inline-block mr-4'>
+            <div className='p-1 rounded-t bg-gray-400 w-full'>
+              Market Depth:{" "}
+            </div>
+            <input
+              className='bg-gray-200 rounded-b p-1 w-full'
+              type='number'
+              value={marketDepth}
+              onChange={handleDepthChange}
+            />
+          </div>
           <PriceTypeSelector
             label='Ingredient Price Type: '
             selected={ingredientPriceType}
@@ -56,7 +58,9 @@ function GW2DinnerBox() {
         </div>
       </div>
 
-      <CollapseGroup children={collapsibleChildren} />
+      <div className='w-full m-8'>
+        <CollapseGroup children={collapsibleChildren} onlyOneOpen={true} />
+      </div>
     </div>
   );
 }
@@ -73,8 +77,8 @@ function PriceTypeSelector({
 }) {
   return (
     <div className='inline-block mr-4'>
-      {label}
-      <div className='flex flex-col gap-2'>
+      <div className='bg-gray-400 w-full p-1 rounded-t'>{label}</div>
+      <div className='flex flex-col gap-2 bg-gray-200 p-2 rounded-b'>
         <label>
           <input
             type='radio'
@@ -82,6 +86,7 @@ function PriceTypeSelector({
             value='instant'
             checked={selected === "sells"}
             onChange={() => onSelect("sells")}
+            className='mr-1'
           />
           sells
         </label>
@@ -92,6 +97,7 @@ function PriceTypeSelector({
             value='listing'
             checked={selected === "buys"}
             onChange={() => onSelect("buys")}
+            className='mr-1'
           />
           buys
         </label>
@@ -103,47 +109,22 @@ function PriceTypeSelector({
 const collapsibleChildren = [
   {
     title: "Tier 1 to Tier 2 Recipes",
-    content: (
-      <RecipeTable
-        tableName='Tier 1 to Tier 2 Recipes'
-        recipes={T1toT2Recipes}
-      />
-    ),
+    content: <RecipeTable recipes={T1toT2Recipes} />,
   },
   {
     title: "Tier 2 to Tier 3 Recipes",
-    content: (
-      <RecipeTable
-        tableName='Tier 2 to Tier 3 Recipes'
-        recipes={T2toT3Recipes}
-      />
-    ),
+    content: <RecipeTable recipes={T2toT3Recipes} />,
   },
   {
     title: "Tier 3 to Tier 4 Recipes",
-    content: (
-      <RecipeTable
-        tableName='Tier 3 to Tier 4 Recipes'
-        recipes={T3toT4Recipes}
-      />
-    ),
+    content: <RecipeTable recipes={T3toT4Recipes} />,
   },
   {
     title: "Tier 4 to Tier 5 Recipes",
-    content: (
-      <RecipeTable
-        tableName='Tier 4 to Tier 5 Recipes'
-        recipes={T4toT5Recipes}
-      />
-    ),
+    content: <RecipeTable recipes={T4toT5Recipes} />,
   },
   {
     title: "Tier 5 to Tier 6 Recipes",
-    content: (
-      <RecipeTable
-        tableName='Tier 5 to Tier 6 Recipes'
-        recipes={T5toT6Recipes}
-      />
-    ),
+    content: <RecipeTable recipes={T5toT6Recipes} />,
   },
 ];

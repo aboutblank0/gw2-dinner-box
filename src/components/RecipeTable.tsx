@@ -1,16 +1,15 @@
 import { PhilosopherStone } from "../constants/materials";
-import { AllRecipes, type MaterialRecipe } from "../constants/recipes";
+import { type MaterialRecipe } from "../constants/recipes";
 import { getPriceByType } from "../util/marketUtil";
 import { useGlobalContext } from "./GlobalContext";
 import GW2ItemDisplay from "./GW2ItemDisplay";
 import GW2PriceDisplay from "./GW2PriceDisplay";
 
 interface RecipeTableProps {
-  tableName: string;
   recipes: MaterialRecipe[];
 }
 
-export function RecipeTable({ tableName, recipes }: RecipeTableProps) {
+export function RecipeTable({ recipes }: RecipeTableProps) {
   const headers = [
     "Ingredients",
     "Output",

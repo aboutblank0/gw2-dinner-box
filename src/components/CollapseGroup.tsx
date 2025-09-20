@@ -1,29 +1,34 @@
 import { useState, type ReactElement } from "react";
 
-interface CollapsibleGroupProps {
-  children: CollapsibleChild | CollapsibleChild[];
-}
-
 export type CollapsibleChild = {
   title: string;
   content: ReactElement;
 };
 
+interface CollapseGroupProps {
+  children: CollapsibleChild | CollapsibleChild[];
+  onlyOneOpen?: boolean;
+}
+
 export function CollapseGroup({
   children: collapsibles,
-}: CollapsibleGroupProps) {
+  onlyOneOpen,
+}: CollapseGroupProps) {
   const childrenArray = Array.isArray(collapsibles)
     ? collapsibles
     : [collapsibles];
   const [openItems, setOpenItems] = useState<number[]>([]);
 
   const toggle = (index: number) => {
-    setOpenItems(
-      (prev) =>
+    if (onlyOneOpen) {
+      setOpenItems((prev) => (prev.includes(index) ? [] : [index]));
+    } else {
+      setOpenItems((prev) =>
         prev.includes(index)
-          ? prev.filter((i) => i !== index) // close it
-          : [...prev, index] // open it
-    );
+          ? prev.filter((i) => i !== index)
+          : [...prev, index]
+      );
+    }
   };
 
   return (
@@ -32,7 +37,7 @@ export function CollapseGroup({
         <div key={i}>
           <button
             onClick={() => toggle(i)}
-            className='rounded-md bg-slate-800 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-700 active:bg-slate-700'
+            className='py-2 px-4 text-center w-full bg-gray-400 rounded'
             type='button'
           >
             {child.title}
