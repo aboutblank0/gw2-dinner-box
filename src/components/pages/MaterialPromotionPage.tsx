@@ -48,11 +48,13 @@ function MaterialPromotionPage() {
           <PriceTypeSelector
             label='Ingredient Price Type: '
             selected={ingredientPriceType}
+            isIngredient={true}
             onSelect={setIngredientPriceType}
           />
           <PriceTypeSelector
             label='Profit Price Type: '
             selected={resultPriceType}
+            isIngredient={false}
             onSelect={setResultPriceType}
           />
         </div>
@@ -69,10 +71,12 @@ export default MaterialPromotionPage;
 function PriceTypeSelector({
   label,
   selected,
+  isIngredient,
   onSelect,
 }: {
   label: string;
   selected: PriceType;
+  isIngredient: boolean;
   onSelect: (type: PriceType) => void;
 }) {
   return (
@@ -83,23 +87,21 @@ function PriceTypeSelector({
           <input
             type='radio'
             name={label}
-            value='instant'
             checked={selected === "sells"}
             onChange={() => onSelect("sells")}
             className='mr-1'
           />
-          sells
+          {isIngredient ? "sells (instant buy)" : "sells (listing)"}
         </label>
         <label>
           <input
             type='radio'
             name={label}
-            value='listing'
             checked={selected === "buys"}
             onChange={() => onSelect("buys")}
             className='mr-1'
           />
-          buys
+          {isIngredient ? "buys (listing)" : "buys (instant sell)"}
         </label>
       </div>
     </div>
