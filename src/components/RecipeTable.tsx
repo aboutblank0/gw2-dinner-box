@@ -82,10 +82,6 @@ function RecipeRow({ recipe }: RecipeRowProps) {
       <td className='px-6 py-4 whitespace-nowrap flex flex-row'>
         {recipe.ingredients.map((ing) => {
           const item = items[ing.materialId];
-
-          if (item.id === PhilosopherStone.id) {
-            console.log(ing.quantity);
-          }
           return (
             <GW2ItemDisplay key={item.id} item={item} amount={ing.quantity} />
           );

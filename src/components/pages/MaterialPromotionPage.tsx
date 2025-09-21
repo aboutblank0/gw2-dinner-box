@@ -11,7 +11,7 @@ import { CollapseGroup } from "../CollapseGroup";
 import { useGlobalContext } from "../GlobalContext";
 import { RecipeTable } from "../RecipeTable";
 
-function GW2DinnerBox() {
+function MaterialPromotionPage() {
   const {
     updateItemPrices,
     ingredientPriceType,
@@ -64,7 +64,7 @@ function GW2DinnerBox() {
     </div>
   );
 }
-export default GW2DinnerBox;
+export default MaterialPromotionPage;
 
 function PriceTypeSelector({
   label,

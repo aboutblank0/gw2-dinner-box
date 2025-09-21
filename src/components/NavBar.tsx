@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 const paths = [
-  { path: "/dinner-box", label: "Dinner Box" },
+  { path: "/material-promotion", label: "Material Promotion" },
   { path: "/recipe-tree", label: "Recipe Tree" },
 ];
 

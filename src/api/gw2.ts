@@ -7,6 +7,15 @@ export type GW2Item = {
   rarity?: string;
 };
 
+export type GW2Recipe = {
+  id: number;
+  type: string;
+  output_item_id: number;
+  output_item_count: number;
+  flags: string[];
+  ingredients: { item_id: number; count: number }[];
+};
+
 export type GW2ItemListing = {
   id: number;
   buys?: GW2TradeListing[];
@@ -64,4 +73,21 @@ export async function fetchGW2ItemsListings(
     listingsMap[listing.id] = listing;
   });
   return listingsMap;
+}
+
+export async function fetchRecipesForItem(
+  itemId: number
+): Promise<GW2Recipe[] | null> {
+  const url = `${BASE_URL}/recipes/search?input=${itemId}`;
+  const recipeIds = await fetch(url).then((res) => res.json());
+
+  if (!Array.isArray(recipeIds) || recipeIds.length === 0) {
+    return null;
+  }
+
+  const recipes = await fetch(
+    `${BASE_URL}/recipes?ids=${recipeIds.join(",")}`
+  ).then((res) => res.json());
+
+  return recipes as GW2Recipe[];
 }
