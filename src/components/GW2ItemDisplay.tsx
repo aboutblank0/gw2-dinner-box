@@ -13,10 +13,23 @@ function GW2ItemDisplay({
 }: GW2ItemDisplayProps) {
   if (!item) return null;
 
+  const openInWiki = () => {
+    const wikiUrl = `https://wiki.guildwars2.com/wiki/${encodeURIComponent(
+      item.name
+    )}`;
+    window.open(wikiUrl, "_blank");
+  };
+
   return (
     <div>
       <div className='relative inline-block group'>
-        <img src={item.icon} alt={item.name} width={32} height={32} />
+        <img
+          src={item.icon}
+          alt={item.name}
+          width={32}
+          height={32}
+          onClick={openInWiki}
+        />
         {showAmount && (
           <span className='absolute bottom-0 right-0 bg-black/70 text-white text-xs px-1 rounded'>
             {amount}

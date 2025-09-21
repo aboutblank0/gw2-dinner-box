@@ -28,6 +28,14 @@ export type GW2TradeListing = {
   listings: number;
 };
 
+export type ItemWithRecipe = {
+  itemId: number;
+  crafts: ItemWithRecipe[];
+
+  item?: GW2Item;
+  itemListing?: GW2ItemListing;
+};
+
 const BASE_URL = "https://api.guildwars2.com/v2";
 
 /**
@@ -91,3 +99,67 @@ export async function fetchRecipesForItem(
 
   return recipes as GW2Recipe[];
 }
+
+export async function fetchRecipesDepth(
+  itemId: number,
+  depth: number
+): Promise<ItemWithRecipe> {
+  const initialItem = { itemId: itemId, crafts: [] as ItemWithRecipe[] };
+  const allItemIds = new Set<number>();
+  allItemIds.add(itemId);
+
+  async function fetchDepth(item: ItemWithRecipe, currentDepth: number) {
+    if (allItemIds.has(item.itemId) && currentDepth > 0) {
+      return; // Prevent cycles
+    }
+
+    allItemIds.add(item.itemId);
+    const recipes = await fetchRecipesForItem(item.itemId);
+    if (recipes && recipes.length > 0 && currentDepth < depth) {
+      for (const recipe of recipes) {
+        if (RECIPE_TYPES.has(recipe.type)) {
+          const subItem: ItemWithRecipe = {
+            itemId: recipe.output_item_id,
+            crafts: [],
+          };
+          item.crafts.push(subItem);
+          await fetchDepth(subItem, currentDepth + 1);
+        }
+      }
+    }
+  }
+
+  await fetchDepth(initialItem, 0);
+
+  const itemsData = await fetchGW2Items(Array.from(allItemIds));
+  const itemsListings = await fetchGW2ItemsListings(Array.from(allItemIds));
+
+  //recurse through the initialItem and assign the item data
+  function assignItemData(item: ItemWithRecipe) {
+    item.item = itemsData.find((i) => i.id === item.itemId) || undefined;
+    item.itemListing = itemsListings[item.itemId] || undefined;
+    for (const craft of item.crafts) {
+      assignItemData(craft);
+    }
+  }
+  assignItemData(initialItem);
+  return initialItem;
+}
+
+const RECIPE_TYPES = new Set([
+  "Dessert",
+  "Feast",
+  "IngredientCooking",
+  "Meal",
+  "Seasoning",
+  "Snack",
+  "Soup",
+  "Food",
+  "Component",
+  "Inscription",
+  "Insignia",
+  "LegendaryComponent",
+  "Refinement",
+  "RefinementEctoplasm",
+  "RefinementObsidian",
+]);

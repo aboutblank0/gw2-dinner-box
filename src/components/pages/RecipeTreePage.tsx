@@ -1,31 +1,26 @@
 import { useState } from "react";
-import GW2ItemDisplay from "../GW2ItemDisplay";
-import {
-  fetchGW2Items,
-  fetchRecipesForItem,
-  type GW2Item,
-} from "../../api/gw2";
+import { fetchRecipesDepth, type ItemWithRecipe } from "../../api/gw2";
 import { LoadingSpinner } from "../LoadingSpinner";
+import GW2ItemDisplay from "../GW2ItemDisplay";
+import GW2PriceDisplay from "../GW2PriceDisplay";
 
 export function RecipeTreePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [searching, setSearching] = useState(false);
-  const [item, setItem] = useState<GW2Item | undefined>(undefined);
-  const [outputs, setOutputs] = useState<GW2Item[]>([]);
+  const [itemWithRecipes, setItemWithRecipes] = useState<
+    ItemWithRecipe | undefined
+  >(undefined);
 
   const handleSearch = async () => {
     setSearching(true);
 
-    const items = await fetchGW2Items([parseInt(searchTerm)]);
-    setItem(items[0]);
+    // const itemBeingSearched = await fetchGW2Items([parseInt(searchTerm)]);
 
-    const recipes = await fetchRecipesForItem(parseInt(searchTerm));
-    const outputItemIds =
-      recipes?.flatMap((recipe) => recipe.output_item_id) || [];
-
-    const outputItems = await fetchGW2Items(outputItemIds);
-    setOutputs(outputItems);
-
+    const recipesWithDepth = await fetchRecipesDepth(
+      parseInt(searchTerm),
+      Infinity
+    );
+    setItemWithRecipes(recipesWithDepth);
     setSearching(false);
   };
 
@@ -54,22 +49,45 @@ export function RecipeTreePage() {
         Search
       </button>
 
-      <div className='mt-4'>
-        {item && <GW2ItemDisplay item={item} showAmount={false} />}
+      <div className='m-8'>
+        <ItemTree item={itemWithRecipes ?? { itemId: 0, crafts: [] }} />
       </div>
+    </div>
+  );
+}
 
-      <div className='mt-4'>
-        {outputs.length > 0 && (
-          <>
-            <h2 className='text-xl font-semibold mb-2'>Output Items:</h2>
-            <div className='grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4'>
-              {outputs.map((output) => (
-                <GW2ItemDisplay key={output.id} item={output} amount={1} />
-              ))}
-            </div>
-          </>
+type ItemProps = {
+  item: ItemWithRecipe;
+  depth?: number;
+};
+
+function ItemTree({ item, depth = 0 }: ItemProps) {
+  const [expanded, setExpanded] = useState(true);
+
+  return (
+    <div className='ml-4'>
+      <div
+        onClick={() => item.crafts.length > 0 && setExpanded((prev) => !prev)}
+        className={`flex items-center space-x-2 ${
+          item.crafts.length > 0 ? "cursor-pointer" : ""
+        }`}
+      >
+        {item.item && <GW2ItemDisplay item={item.item} showAmount={false} />}
+        {item.item && <span>{item.item.name}</span>}
+        {item.itemListing && (
+          <GW2PriceDisplay
+            price={item.itemListing.buys?.[0].unit_price ?? -Infinity}
+          />
         )}
       </div>
+
+      {expanded && item.crafts.length > 0 && (
+        <div className='pl-4 border-l border-gray-300'>
+          {item.crafts.map((craft) => (
+            <ItemTree key={craft.itemId} item={craft} depth={depth + 1} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
