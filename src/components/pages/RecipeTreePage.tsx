@@ -26,9 +26,6 @@ export function RecipeTreePage() {
     const outputItems = await fetchGW2Items(outputItemIds);
     setOutputs(outputItems);
 
-    //TODO: REMOVE
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-
     setSearching(false);
   };
 
