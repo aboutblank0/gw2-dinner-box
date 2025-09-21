@@ -70,7 +70,16 @@ function RecipeRow({ recipe }: RecipeRowProps) {
     getPriceByType(prices, recipe.output.materialId, resultPriceType) *
     recipe.output.quantity;
 
-  const totalProfit = totalRevenue * 0.85 - totalPrice;
+  let totalRevenueAfterTax = totalRevenue;
+  if (resultPriceType === "sells") {
+    // 15% tax (10% listing fee + 5% TP tax)
+    totalRevenueAfterTax = totalRevenue * 0.85;
+  } else {
+    // 5% TP tax
+    totalRevenueAfterTax = totalRevenue * 0.95;
+  }
+
+  const totalProfit = totalRevenueAfterTax - totalPrice;
 
   //1 spirit shard = 10 philosophers stones
   const profitPerShard = philosophersUsed
