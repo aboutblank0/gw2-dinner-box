@@ -1,9 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  fetchAllRecipes,
   fetchGW2Items,
   fetchGW2ItemsListings,
   type GW2Item,
   type GW2ItemListing,
+  type GW2Recipe,
 } from "../api/gw2";
 import { Materials, PhilosopherStone } from "../constants/materials";
 import {
@@ -15,6 +17,9 @@ import {
 interface GlobalContextType {
   items?: Record<number, GW2Item>;
   prices?: Record<number, PriceSummary>;
+  recipes?: Record<number, GW2Recipe>;
+  usedInRecipes?: Record<number, GW2Recipe[]>;
+
   updateItemPrices: (depth: number) => void;
 
   ingredientPriceType: PriceType;
@@ -38,6 +43,14 @@ export const GlobalProvider: React.FC<React.PropsWithChildren<{}>> = ({
   );
   const [prices, setPrices] = React.useState<
     Record<number, PriceSummary> | undefined
+  >(undefined);
+
+  const [recipes, setRecipes] = useState<Record<number, GW2Recipe> | undefined>(
+    undefined
+  );
+
+  const [usedInRecipes, setUsedInRecipes] = useState<
+    Record<number, GW2Recipe[]> | undefined
   >(undefined);
 
   const [apiPrices, setApiPrices] = React.useState<
@@ -79,8 +92,32 @@ export const GlobalProvider: React.FC<React.PropsWithChildren<{}>> = ({
       }
     }
 
+    async function fetchRecipes() {
+      try {
+        const recipeMap = await fetchAllRecipes();
+        setRecipes(recipeMap);
+
+        // Where key is the item ID,
+        // and the value is a list of recipes that use that item as an ingredient
+        const usedInMap: Record<number, GW2Recipe[]> = {};
+        Object.values(recipeMap).forEach((recipe) => {
+          recipe.ingredients.forEach((ingredient) => {
+            if (!usedInMap[ingredient.item_id]) {
+              usedInMap[ingredient.item_id] = [];
+            }
+            usedInMap[ingredient.item_id].push(recipe);
+          });
+        });
+
+        setUsedInRecipes(usedInMap);
+      } catch (error) {
+        console.error("Error fetching GW2 recipes:", error);
+      }
+    }
+
     fetchItems();
     fetchPrices();
+    fetchRecipes();
   }, []);
 
   useEffect(() => {
@@ -102,6 +139,8 @@ export const GlobalProvider: React.FC<React.PropsWithChildren<{}>> = ({
   const contextValue: GlobalContextType = {
     items,
     prices,
+    recipes,
+    usedInRecipes,
     ingredientPriceType,
     resultPriceType,
     setIngredientPriceType,

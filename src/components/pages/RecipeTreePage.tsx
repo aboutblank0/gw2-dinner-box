@@ -3,8 +3,11 @@ import { fetchRecipesDepth, type ItemWithRecipe } from "../../api/gw2";
 import { LoadingSpinner } from "../LoadingSpinner";
 import GW2ItemDisplay from "../GW2ItemDisplay";
 import GW2PriceDisplay from "../GW2PriceDisplay";
+import { useGlobalContext } from "../GlobalContext";
 
 export function RecipeTreePage() {
+  const { usedInRecipes } = useGlobalContext();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [searching, setSearching] = useState(false);
   const [itemWithRecipes, setItemWithRecipes] = useState<
@@ -17,6 +20,7 @@ export function RecipeTreePage() {
     // const itemBeingSearched = await fetchGW2Items([parseInt(searchTerm)]);
 
     const recipesWithDepth = await fetchRecipesDepth(
+      usedInRecipes ?? {},
       parseInt(searchTerm),
       Infinity
     );
@@ -76,7 +80,7 @@ function ItemTree({ item, depth = 0 }: ItemProps) {
         {item.item && <span>{item.item.name}</span>}
         {item.itemListing && (
           <GW2PriceDisplay
-            price={item.itemListing.buys?.[0].unit_price ?? -Infinity}
+            price={item.itemListing.buys?.[0]?.unit_price ?? -Infinity}
           />
         )}
       </div>

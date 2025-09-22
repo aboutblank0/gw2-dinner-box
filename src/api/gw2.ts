@@ -1,3 +1,4 @@
+//TODO: Refactor this entire file to be honest. too bulky and does a lot of logic it shouldn't
 export type GW2Item = {
   id: number;
   name: string;
@@ -38,11 +39,7 @@ export type ItemWithRecipe = {
 
 const BASE_URL = "https://api.guildwars2.com/v2";
 
-/**
- * Fetches item data for a list of GW2 item IDs.
- * @param ids An array of item IDs.
- * @returns A promise resolving to an array of GW2Item objects.
- */
+//TODO: Fix so that when the list of ids exceeds the URL length limit, it splits into multiple requests.
 export async function fetchGW2Items(ids: number[]): Promise<GW2Item[]> {
   if (ids.length === 0) return [];
 
@@ -83,24 +80,8 @@ export async function fetchGW2ItemsListings(
   return listingsMap;
 }
 
-export async function fetchRecipesForItem(
-  itemId: number
-): Promise<GW2Recipe[] | null> {
-  const url = `${BASE_URL}/recipes/search?input=${itemId}`;
-  const recipeIds = await fetch(url).then((res) => res.json());
-
-  if (!Array.isArray(recipeIds) || recipeIds.length === 0) {
-    return null;
-  }
-
-  const recipes = await fetch(
-    `${BASE_URL}/recipes?ids=${recipeIds.join(",")}`
-  ).then((res) => res.json());
-
-  return recipes as GW2Recipe[];
-}
-
 export async function fetchRecipesDepth(
+  usedInRecipes: Record<number, GW2Recipe[]>,
   itemId: number,
   depth: number
 ): Promise<ItemWithRecipe> {
@@ -114,7 +95,8 @@ export async function fetchRecipesDepth(
     }
 
     allItemIds.add(item.itemId);
-    const recipes = await fetchRecipesForItem(item.itemId);
+    const recipes = usedInRecipes[item.itemId];
+
     if (recipes && recipes.length > 0 && currentDepth < depth) {
       for (const recipe of recipes) {
         if (RECIPE_TYPES.has(recipe.type)) {
@@ -144,6 +126,22 @@ export async function fetchRecipesDepth(
   }
   assignItemData(initialItem);
   return initialItem;
+}
+
+export async function fetchAllRecipes(): Promise<Record<number, GW2Recipe>> {
+  const url = "https://api.datawars2.ie/gw2/v2/recipes";
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch all GW2 recipes: ${response.statusText}`);
+  }
+  const data: GW2Recipe[] = await response.json();
+
+  const recipesMap: Record<number, GW2Recipe> = {};
+  data.forEach((recipe) => {
+    recipesMap[recipe.id] = recipe;
+  });
+  return recipesMap;
 }
 
 const RECIPE_TYPES = new Set([
