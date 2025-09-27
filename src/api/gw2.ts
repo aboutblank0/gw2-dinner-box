@@ -1,12 +1,28 @@
-//TODO: Refactor this entire file to be honest. too bulky and does a lot of logic it shouldn't
-export type GW2Item = {
+const BASE_URL = "https://api.guildwars2.com/v2";
+const CHUNK_SIZE = 200;
+
+export type ItemWithListing = {
   id: number;
   name: string;
-  icon: string;
-  description?: string;
-  type?: string;
-  rarity?: string;
+  buy_quantity: number;
+  buy_price: number;
+  sell_quantity: number;
+  sell_price: number;
+
+  lastUpdate: string; //date string
 };
+
+export async function getAllitemsWithListings(): Promise<
+  Record<number, ItemWithListing>
+> {
+  const url = "https://api.datawars2.ie/gw2/v1/items/json";
+  const response = await fetch(url);
+  const items = await response.json();
+  const itemsMap: Record<number, ItemWithListing> = Object.fromEntries(
+    items.map((item: GW2Item) => [item.id, item])
+  );
+  return itemsMap;
+}
 
 export type GW2Recipe = {
   id: number;
@@ -16,6 +32,33 @@ export type GW2Recipe = {
   flags: string[];
   ingredients: { item_id: number; count: number }[];
 };
+
+export async function getAllRecipes(): Promise<Record<number, GW2Recipe>> {
+  const url = "https://api.datawars2.ie/gw2/v2/recipes";
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch all GW2 recipes: ${response.statusText}`);
+  }
+  const data: GW2Recipe[] = await response.json();
+
+  const mysticForgeUrl =
+    "https://api.datawars2.ie/gw2/v2/recipes?filter=type:MysticForge";
+  const mysticResponse = await fetch(mysticForgeUrl);
+  if (!mysticResponse.ok) {
+    throw new Error(
+      `Failed to fetch mystic forge recipes: ${mysticResponse.statusText}`
+    );
+  }
+  const mysticData: GW2Recipe[] = await mysticResponse.json();
+  data.push(...mysticData);
+
+  const recipesMap: Record<number, GW2Recipe> = {};
+  data.forEach((recipe) => {
+    recipesMap[recipe.id] = recipe;
+  });
+  return recipesMap;
+}
 
 export type GW2ItemListing = {
   id: number;
@@ -29,54 +72,76 @@ export type GW2TradeListing = {
   listings: number;
 };
 
-export type ItemWithRecipe = {
+//TODO: Refactor this entire file to be honest. too bulky and does a lot of logic it shouldn't
+export type GW2Item = {
+  id: number;
+  name: string;
+  icon: string;
+  description?: string;
+  type?: string;
+  rarity?: string;
+};
+
+export type ItemTree = {
   itemId: number;
-  crafts: ItemWithRecipe[];
+  crafts: ItemTree[];
+  fromRecipe: GW2Recipe;
 
   item?: GW2Item;
   itemListing?: GW2ItemListing;
 };
 
-const BASE_URL = "https://api.guildwars2.com/v2";
-
-//TODO: Fix so that when the list of ids exceeds the URL length limit, it splits into multiple requests.
-export async function fetchGW2Items(ids: number[]): Promise<GW2Item[]> {
+export async function fetchGW2Items(
+  ids: number[]
+): Promise<Record<number, GW2Item>> {
   if (ids.length === 0) return [];
 
-  const idsParam = ids.join(",");
-  const url = `${BASE_URL}/items?ids=${encodeURIComponent(idsParam)}`;
+  const results: GW2Item[] = [];
 
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch GW2 items: ${response.statusText}`);
+  for (let i = 0; i < ids.length; i += CHUNK_SIZE) {
+    const batch = ids.slice(i, i + CHUNK_SIZE);
+    const idsParam = batch.join(",");
+    const url = `${BASE_URL}/items?ids=${encodeURIComponent(idsParam)}`;
+
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch GW2 items: ${response.statusText}`);
+    }
+
+    const data: GW2Item[] = await response.json();
+    results.push(...data);
+
+    const itemsMap: Record<number, GW2Item> = Object.fromEntries(
+      results.map((item) => [item.id, item])
+    );
+    return itemsMap;
   }
 
-  const data: GW2Item[] = await response.json();
-  return data;
+  return results;
 }
 
-export async function fetchGW2ItemsListings(
-  ids: number[]
-): Promise<Record<number, GW2ItemListing>> {
+export async function fetchGW2ItemsListings(ids: number[]) {
   if (ids.length === 0) return {};
 
-  const idsParam = ids.join(",");
-  const url = `${BASE_URL}/commerce/listings?ids=${encodeURIComponent(
-    idsParam
-  )}`;
-
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(
-      `Failed to fetch GW2 item listings: ${response.statusText}`
-    );
-  }
-  const data = await response.json();
-
   const listingsMap: Record<number, GW2ItemListing> = {};
-  data.forEach((listing: GW2ItemListing) => {
-    listingsMap[listing.id] = listing;
-  });
+
+  for (let i = 0; i < ids.length; i += CHUNK_SIZE) {
+    const chunk = ids.slice(i, i + CHUNK_SIZE);
+    const idsParam = chunk.join(",");
+    const url = `${BASE_URL}/commerce/listings?ids=${encodeURIComponent(
+      idsParam
+    )}`;
+
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch listings: ${response.statusText}`);
+    }
+    const data = await response.json();
+    data.forEach((listing: GW2ItemListing) => {
+      listingsMap[listing.id] = listing;
+    });
+  }
+
   return listingsMap;
 }
 
@@ -84,12 +149,16 @@ export async function fetchRecipesDepth(
   usedInRecipes: Record<number, GW2Recipe[]>,
   itemId: number,
   depth: number
-): Promise<ItemWithRecipe> {
-  const initialItem = { itemId: itemId, crafts: [] as ItemWithRecipe[] };
+): Promise<ItemTree> {
+  const initialItem = {
+    itemId: itemId,
+    crafts: [] as ItemTree[],
+    fromRecipe: {} as GW2Recipe,
+  };
   const allItemIds = new Set<number>();
   allItemIds.add(itemId);
 
-  async function fetchDepth(item: ItemWithRecipe, currentDepth: number) {
+  async function fetchDepth(item: ItemTree, currentDepth: number) {
     if (allItemIds.has(item.itemId) && currentDepth > 0) {
       return; // Prevent cycles
     }
@@ -100,8 +169,9 @@ export async function fetchRecipesDepth(
     if (recipes && recipes.length > 0 && currentDepth < depth) {
       for (const recipe of recipes) {
         if (RECIPE_TYPES.has(recipe.type)) {
-          const subItem: ItemWithRecipe = {
+          const subItem: ItemTree = {
             itemId: recipe.output_item_id,
+            fromRecipe: recipe,
             crafts: [],
           };
           item.crafts.push(subItem);
@@ -114,11 +184,12 @@ export async function fetchRecipesDepth(
   await fetchDepth(initialItem, 0);
 
   const itemsData = await fetchGW2Items(Array.from(allItemIds));
+  console.log("fetching item listings");
   const itemsListings = await fetchGW2ItemsListings(Array.from(allItemIds));
 
   //recurse through the initialItem and assign the item data
-  function assignItemData(item: ItemWithRecipe) {
-    item.item = itemsData.find((i) => i.id === item.itemId) || undefined;
+  function assignItemData(item: ItemTree) {
+    item.item = itemsData[item.itemId] || undefined;
     item.itemListing = itemsListings[item.itemId] || undefined;
     for (const craft of item.crafts) {
       assignItemData(craft);
@@ -126,22 +197,6 @@ export async function fetchRecipesDepth(
   }
   assignItemData(initialItem);
   return initialItem;
-}
-
-export async function fetchAllRecipes(): Promise<Record<number, GW2Recipe>> {
-  const url = "https://api.datawars2.ie/gw2/v2/recipes";
-
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch all GW2 recipes: ${response.statusText}`);
-  }
-  const data: GW2Recipe[] = await response.json();
-
-  const recipesMap: Record<number, GW2Recipe> = {};
-  data.forEach((recipe) => {
-    recipesMap[recipe.id] = recipe;
-  });
-  return recipesMap;
 }
 
 const RECIPE_TYPES = new Set([
@@ -160,4 +215,5 @@ const RECIPE_TYPES = new Set([
   "Refinement",
   "RefinementEctoplasm",
   "RefinementObsidian",
+  "MysticForge",
 ]);

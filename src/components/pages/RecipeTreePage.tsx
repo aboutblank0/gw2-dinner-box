@@ -1,23 +1,21 @@
 import { useState } from "react";
-import { fetchRecipesDepth, type ItemWithRecipe } from "../../api/gw2";
+import { fetchRecipesDepth, type ItemTree } from "../../api/gw2";
 import { LoadingSpinner } from "../LoadingSpinner";
 import GW2ItemDisplay from "../GW2ItemDisplay";
 import GW2PriceDisplay from "../GW2PriceDisplay";
-import { useGlobalContext } from "../GlobalContext";
+import { useGlobalContext } from "../contexts/GlobalContext";
 
 export function RecipeTreePage() {
   const { usedInRecipes } = useGlobalContext();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [searching, setSearching] = useState(false);
-  const [itemWithRecipes, setItemWithRecipes] = useState<
-    ItemWithRecipe | undefined
-  >(undefined);
+  const [itemWithRecipes, setItemWithRecipes] = useState<ItemTree | undefined>(
+    undefined
+  );
 
   const handleSearch = async () => {
     setSearching(true);
-
-    // const itemBeingSearched = await fetchGW2Items([parseInt(searchTerm)]);
 
     const recipesWithDepth = await fetchRecipesDepth(
       usedInRecipes ?? {},
@@ -54,19 +52,26 @@ export function RecipeTreePage() {
       </button>
 
       <div className='m-8'>
-        <ItemTree item={itemWithRecipes ?? { itemId: 0, crafts: [] }} />
+        {itemWithRecipes && <ItemTree item={itemWithRecipes} />}
       </div>
     </div>
   );
 }
 
-type ItemProps = {
-  item: ItemWithRecipe;
+type ItemTreeProps = {
+  item: ItemTree;
   depth?: number;
 };
 
-function ItemTree({ item, depth = 0 }: ItemProps) {
+function ItemTree({ item, depth = 0 }: ItemTreeProps) {
   const [expanded, setExpanded] = useState(true);
+
+  const printInformation = (item: ItemTree) => () => {
+    console.log("Item ID:", item.itemId);
+    console.log("Item type:", item.item?.type ?? "Unknown");
+    console.log("From Recipe:", item.fromRecipe);
+    console.log("Full item data:", item.item);
+  };
 
   return (
     <div className='ml-4'>
@@ -83,6 +88,12 @@ function ItemTree({ item, depth = 0 }: ItemProps) {
             price={item.itemListing.buys?.[0]?.unit_price ?? -Infinity}
           />
         )}
+        <button
+          className='rounded border-2 border-black text-sm'
+          onClick={printInformation(item)}
+        >
+          Print information
+        </button>
       </div>
 
       {expanded && item.crafts.length > 0 && (

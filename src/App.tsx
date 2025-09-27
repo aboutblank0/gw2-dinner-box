@@ -1,5 +1,5 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import { GlobalProvider } from "./components/GlobalContext";
+import { GlobalProvider } from "./components/contexts/GlobalContext";
 import MaterialPromotionPage from "./components/pages/MaterialPromotionPage";
 import { RecipeTreePage } from "./components/pages/RecipeTreePage";
 import { NavBar } from "./components/NavBar";

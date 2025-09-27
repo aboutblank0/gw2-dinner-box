@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from "react";
 import {
-  fetchAllRecipes,
+  getAllRecipes,
   fetchGW2Items,
   fetchGW2ItemsListings,
   type GW2Item,
   type GW2ItemListing,
   type GW2Recipe,
-} from "../api/gw2";
-import { Materials, PhilosopherStone } from "../constants/materials";
+} from "../../api/gw2";
+import { Materials, PhilosopherStone } from "../../constants/materials";
 import {
   getPriceSummary,
   type PriceSummary,
   type PriceType,
-} from "../util/marketUtil";
+} from "../../util/marketUtil";
 
 interface GlobalContextType {
   items?: Record<number, GW2Item>;
@@ -72,11 +72,7 @@ export const GlobalProvider: React.FC<React.PropsWithChildren<{}>> = ({
   useEffect(() => {
     async function fetchItems() {
       try {
-        const items = await fetchGW2Items(allMaterialIds);
-        const itemsMap: Record<number, GW2Item> = Object.fromEntries(
-          items.map((item) => [item.id, item])
-        );
-
+        const itemsMap = await fetchGW2Items(allMaterialIds);
         setItems(itemsMap);
       } catch (error) {
         console.error("Error fetching GW2 items:", error);
@@ -94,7 +90,7 @@ export const GlobalProvider: React.FC<React.PropsWithChildren<{}>> = ({
 
     async function fetchRecipes() {
       try {
-        const recipeMap = await fetchAllRecipes();
+        const recipeMap = await getAllRecipes();
         setRecipes(recipeMap);
 
         // Where key is the item ID,

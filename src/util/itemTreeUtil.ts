@@ -1,0 +1,18 @@
+const RECIPE_TYPES = new Set([
+  "Dessert",
+  "Feast",
+  "IngredientCooking",
+  "Meal",
+  "Seasoning",
+  "Snack",
+  "Soup",
+  "Food",
+  "Component",
+  "Inscription",
+  "Insignia",
+  "LegendaryComponent",
+  "Refinement",
+  "RefinementEctoplasm",
+  "RefinementObsidian",
+  "MysticForge",
+]);

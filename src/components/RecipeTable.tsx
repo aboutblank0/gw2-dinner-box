@@ -1,7 +1,7 @@
 import { PhilosopherStone } from "../constants/materials";
 import { type MaterialRecipe } from "../constants/recipes";
 import { getPriceByType } from "../util/marketUtil";
-import { useGlobalContext } from "./GlobalContext";
+import { useGlobalContext } from "./contexts/GlobalContext";
 import GW2ItemDisplay from "./GW2ItemDisplay";
 import GW2PriceDisplay from "./GW2PriceDisplay";
 

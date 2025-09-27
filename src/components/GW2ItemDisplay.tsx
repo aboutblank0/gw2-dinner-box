@@ -6,11 +6,11 @@ import {
   useClick,
   useFloating,
   useFocus,
-  useHover,
   useInteractions,
 } from "@floating-ui/react";
 import type { GW2Item } from "../api/gw2";
 import { useState } from "react";
+import { useGlobalContext } from "./contexts/GlobalContext";
 
 interface GW2ItemDisplayProps {
   item: GW2Item;
@@ -23,6 +23,8 @@ function GW2ItemDisplay({
   amount = 1,
   showAmount = true,
 }: GW2ItemDisplayProps) {
+  const { usedInRecipes } = useGlobalContext();
+
   const [isOpen, setIsOpen] = useState(false);
   const { refs, floatingStyles, context } = useFloating({
     open: isOpen,
@@ -48,6 +50,10 @@ function GW2ItemDisplay({
     window.open(wikiUrl, "_blank");
   };
 
+  const printRecipes = () => {
+    console.log(usedInRecipes?.[item.id]);
+  };
+
   return (
     <button
       ref={refs.setReference}
@@ -65,7 +71,7 @@ function GW2ItemDisplay({
           ref={refs.setFloating}
           style={floatingStyles}
           {...getFloatingProps()}
-          className='z-10 shadow-lg flex flex-col opacity-90'
+          className='z-10 shadow-lg flex flex-col opacity-90 min-w-64'
         >
           <span className='px-2 font-bold bg-gray-400 rounded-t'>
             {item.name} ({item.id})
@@ -78,10 +84,10 @@ function GW2ItemDisplay({
             Open in Wiki
           </button>
           <button
-            onClick={openInWiki}
+            onClick={printRecipes}
             className='bg-white rounded-b hover:bg-gray-200 transition-all'
           >
-            Open in Wiki but its another button
+            Print recipes
           </button>
         </div>
       )}

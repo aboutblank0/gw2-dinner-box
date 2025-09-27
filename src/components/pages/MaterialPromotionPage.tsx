@@ -8,7 +8,7 @@ import {
 } from "../../constants/recipes";
 import type { PriceType } from "../../util/marketUtil";
 import { CollapseGroup } from "../CollapseGroup";
-import { useGlobalContext } from "../GlobalContext";
+import { useGlobalContext } from "../contexts/GlobalContext";
 import { RecipeTable } from "../RecipeTable";
 
 function MaterialPromotionPage() {
