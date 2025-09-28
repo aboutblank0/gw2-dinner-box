@@ -10,7 +10,7 @@ import {
 } from "@floating-ui/react";
 import type { GW2Item } from "../api/gw2";
 import { useState } from "react";
-import { useGlobalContext } from "./contexts/GlobalContext";
+import { useMaterialPromotionContext } from "./contexts/MaterialPromotionPageContext";
 
 interface GW2ItemDisplayProps {
   item: GW2Item;
@@ -23,7 +23,7 @@ function GW2ItemDisplay({
   amount = 1,
   showAmount = true,
 }: GW2ItemDisplayProps) {
-  const { usedInRecipes } = useGlobalContext();
+  const { usedInRecipes } = useMaterialPromotionContext();
 
   const [isOpen, setIsOpen] = useState(false);
   const { refs, floatingStyles, context } = useFloating({

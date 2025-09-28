@@ -1,24 +1,39 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import { GlobalProvider } from "./components/contexts/GlobalContext";
+import { MaterialPromotionContextProvider } from "./components/contexts/MaterialPromotionPageContext";
 import MaterialPromotionPage from "./components/pages/MaterialPromotionPage";
 import { RecipeTreePage } from "./components/pages/RecipeTreePage";
 import { NavBar } from "./components/NavBar";
+import { GlobalContextProvider } from "./components/contexts/GlobalContext";
+import { RecipeTreeContextProvider } from "./components/contexts/RecipeTreeContext";
 
 function App() {
   return (
     <div>
-      <NavBar />
+      <GlobalContextProvider>
+        <NavBar />
 
-      <GlobalProvider>
         <Routes>
           <Route path='/' element={<Navigate to='/material-promotion' />} />
+
           <Route
             path='/material-promotion/*'
-            element={<MaterialPromotionPage />}
+            element={
+              <MaterialPromotionContextProvider>
+                <MaterialPromotionPage />
+              </MaterialPromotionContextProvider>
+            }
           />
-          <Route path='/recipe-tree/*' element={<RecipeTreePage />} />
+
+          <Route
+            path='/recipe-tree/*'
+            element={
+              <RecipeTreeContextProvider>
+                <RecipeTreePage />
+              </RecipeTreeContextProvider>
+            }
+          />
         </Routes>
-      </GlobalProvider>
+      </GlobalContextProvider>
     </div>
   );
 }
