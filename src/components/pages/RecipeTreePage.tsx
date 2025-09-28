@@ -54,6 +54,10 @@ export function RecipeTreePage() {
             onSelect={setResultPriceType}
           />
           <p>TODO: Add something here to show/hide untradeable options</p>
+          <p>
+            TODO: Item search does not have EVERY item. need better source for
+            all item/names.
+          </p>
         </div>
       </div>
       <div className='p-4 w-full'>
