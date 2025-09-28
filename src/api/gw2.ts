@@ -134,3 +134,25 @@ export async function fetchGW2ItemsListings(
 
   return listingsMap;
 }
+
+export type CustomRecipe = {
+  name: string;
+  output_item_id: number;
+  output_item_count: number;
+  ingredients: { id: number; count: number; type: string }[];
+  disciplines: string[];
+};
+export async function getCustomRecipes(): Promise<CustomRecipe[]> {
+  const url =
+    "https://raw.githubusercontent.com/gw2efficiency/custom-recipes/schema-update/recipes.json";
+
+  const start = Date.now();
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch custom recipes: ${response.statusText}`);
+  }
+  const data: CustomRecipe[] = await response.json();
+  const end = Date.now();
+  console.log(`getCustomRecipes took ${end - start}ms`);
+  return data as CustomRecipe[];
+}

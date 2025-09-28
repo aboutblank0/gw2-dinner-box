@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import {
-  getAllRecipes,
   fetchGW2Items,
   fetchGW2ItemsListings,
   type GW2Item,

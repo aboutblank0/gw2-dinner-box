@@ -1,6 +1,7 @@
 import { PhilosopherStone } from "../constants/materials";
 import { type MaterialRecipe } from "../constants/recipes";
 import { getPriceByType } from "../util/marketUtil";
+import { useGlobalContext } from "./contexts/GlobalContext";
 import { useMaterialPromotionContext } from "./contexts/MaterialPromotionPageContext";
 import GW2ItemDisplay from "./GW2ItemDisplay";
 import GW2PriceDisplay from "./GW2PriceDisplay";
@@ -49,8 +50,8 @@ interface RecipeRowProps {
 }
 
 function RecipeRow({ recipe }: RecipeRowProps) {
-  const { items, prices, ingredientPriceType, resultPriceType } =
-    useMaterialPromotionContext();
+  const { ingredientPriceType, resultPriceType } = useGlobalContext();
+  const { items, prices } = useMaterialPromotionContext();
 
   if (!items || !prices) return null;
 
