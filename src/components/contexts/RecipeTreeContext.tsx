@@ -1,9 +1,9 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import type { GW2Recipe } from "../../api/gw2";
+import type { Recipe } from "../../api/gw2";
 import { useGlobalContext } from "./GlobalContext";
 
 interface RecipeTreeContextType {
-  usedInRecipes: Record<number, GW2Recipe[]>;
+  usedInRecipes: Record<number, Recipe[]>;
 }
 
 const RecipeTreeContext = createContext<RecipeTreeContextType | undefined>(
@@ -18,7 +18,7 @@ export const RecipeTreeContextProvider: React.FC<
   const { allRecipes } = useGlobalContext();
 
   const [usedInRecipes, setUsedInRecipes] = useState<
-    Record<number, GW2Recipe[]> | undefined
+    Record<number, Recipe[]> | undefined
   >(undefined);
 
   useEffect(() => {
@@ -26,13 +26,13 @@ export const RecipeTreeContextProvider: React.FC<
 
     // Where key is the item ID,
     // and the value is a list of recipes that use that item as an ingredient
-    const usedInMap: Record<number, GW2Recipe[]> = {};
+    const usedInMap: Record<number, Recipe[]> = {};
     Object.values(allRecipes).forEach((recipe) => {
       recipe.ingredients.forEach((ingredient) => {
-        if (!usedInMap[ingredient.item_id]) {
-          usedInMap[ingredient.item_id] = [];
+        if (!usedInMap[ingredient.id]) {
+          usedInMap[ingredient.id] = [];
         }
-        usedInMap[ingredient.item_id].push(recipe);
+        usedInMap[ingredient.id].push(recipe);
       });
     });
     setUsedInRecipes(usedInMap);

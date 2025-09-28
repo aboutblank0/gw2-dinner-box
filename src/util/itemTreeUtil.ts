@@ -1,14 +1,14 @@
 import {
   fetchGW2Items,
   type GW2Item,
-  type GW2Recipe,
   type ItemWithListing,
+  type Recipe,
 } from "../api/gw2";
 
 export type ItemTree = {
   itemId: number;
   crafts: ItemTree[];
-  fromRecipe: GW2Recipe;
+  fromRecipe: Recipe;
 
   item?: GW2Item;
   buy_price?: number;
@@ -36,13 +36,13 @@ const RECIPE_TYPES = new Set([
 
 export async function buildItemTree(
   allItemsWithListings: Record<number, ItemWithListing>,
-  usedInRecipes: Record<number, GW2Recipe[]>,
+  usedInRecipes: Record<number, Recipe[]>,
   itemId: number
 ): Promise<ItemTree> {
   const initialItem = {
     itemId: itemId,
     crafts: [] as ItemTree[],
-    fromRecipe: {} as GW2Recipe,
+    fromRecipe: {} as Recipe,
   };
   const allItemIds = new Set<number>();
   allItemIds.add(itemId);
@@ -57,15 +57,13 @@ export async function buildItemTree(
 
     if (recipes && recipes.length > 0) {
       for (const recipe of recipes) {
-        if (RECIPE_TYPES.has(recipe.type)) {
-          const subItem: ItemTree = {
-            itemId: recipe.output_item_id,
-            fromRecipe: recipe,
-            crafts: [],
-          };
-          item.crafts.push(subItem);
-          await fetchDepth(subItem, currentDepth + 1);
-        }
+        const subItem: ItemTree = {
+          itemId: recipe.output_item_id,
+          fromRecipe: recipe,
+          crafts: [],
+        };
+        item.crafts.push(subItem);
+        await fetchDepth(subItem, currentDepth + 1);
       }
     }
   }

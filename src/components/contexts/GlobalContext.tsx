@@ -2,17 +2,14 @@ import React, { useEffect, useState } from "react";
 import {
   getAllitemsWithListings,
   getAllRecipes,
-  getCustomRecipes,
-  type CustomRecipe,
-  type GW2Recipe,
   type ItemWithListing,
+  type Recipe,
 } from "../../api/gw2";
 import type { PriceType } from "../../util/marketUtil";
 
 interface GlobalContextType {
-  customRecipes?: CustomRecipe[];
   allItemsWithListings: Record<number, ItemWithListing>;
-  allRecipes: Record<number, GW2Recipe>;
+  allRecipes: Record<number, Recipe>;
 
   ingredientPriceType: PriceType;
   setIngredientPriceType: (type: PriceType) => void;
@@ -33,8 +30,7 @@ export const GlobalContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
     Record<number, ItemWithListing>
   >({});
 
-  const [allRecipes, setAllRecipes] = useState<Record<number, GW2Recipe>>({});
-  const [customRecipes, setCustomRecipes] = useState<CustomRecipe[]>([]);
+  const [allRecipes, setAllRecipes] = useState<Record<number, Recipe>>({});
 
   const [ingredientPriceType, setIngredientPriceType] =
     React.useState<PriceType>("buys");
@@ -53,14 +49,8 @@ export const GlobalContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
       setAllRecipes(recipes);
     };
 
-    const fetchCustomRecipes = async () => {
-      const customRecipes = await getCustomRecipes();
-      setCustomRecipes(customRecipes);
-    };
-
-    // fetchAllItemWithListings();
-    // fetchAllRecipes();
-    fetchCustomRecipes();
+    fetchAllItemWithListings();
+    fetchAllRecipes();
   }, []);
 
   const contextValue: GlobalContextType = {

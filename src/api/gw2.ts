@@ -24,53 +24,53 @@ export async function getAllitemsWithListings(): Promise<
   return itemsMap;
 }
 
-export type GW2Recipe = {
+export type Recipe = {
   id: number;
-  type: string;
   output_item_id: number;
   output_item_count: number;
-  flags: string[];
-  ingredients: { item_id: number; count: number }[];
+  ingredients: { id: number; count: number; type?: string }[];
+  flags?: string[];
+  type?: string;
+  name?: string;
 };
+export async function getAllRecipes(): Promise<Record<number, Recipe>> {
+  const craftingRecipes = await getAllCraftingRecipes();
+  const customRecipes = await getCustomRecipes();
 
-export async function getAllRecipes(): Promise<Record<number, GW2Recipe>> {
-  const url = "https://api.datawars2.ie/gw2/v2/recipes";
-
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch all GW2 recipes: ${response.statusText}`);
-  }
-  const data: GW2Recipe[] = await response.json();
-
-  const mysticForgeUrl =
-    "https://api.datawars2.ie/gw2/v2/recipes?filter=type:MysticForge";
-  const mysticResponse = await fetch(mysticForgeUrl);
-  if (!mysticResponse.ok) {
-    throw new Error(
-      `Failed to fetch mystic forge recipes: ${mysticResponse.statusText}`
-    );
-  }
-  const mysticData: GW2Recipe[] = await mysticResponse.json();
-  data.push(...mysticData);
-
-  const recipesMap: Record<number, GW2Recipe> = {};
-  data.forEach((recipe) => {
-    recipesMap[recipe.id] = recipe;
+  const allRecipes: Recipe[] = [];
+  craftingRecipes.forEach((recipe) => {
+    allRecipes.push({
+      id: recipe.id,
+      output_item_id: recipe.output_item_id,
+      output_item_count: recipe.output_item_count,
+      ingredients: recipe.ingredients.map((ing) => ({
+        id: ing.item_id,
+        count: ing.count,
+      })),
+      flags: recipe.flags,
+      type: recipe.type,
+    } as Recipe);
   });
-  return recipesMap;
+
+  customRecipes.forEach((recipe) => {
+    // Some items have weirdly large IDs (not sure why), ignore them
+    if (recipe.output_item_id < 1000000) return;
+
+    allRecipes.push({
+      id: recipe.id,
+      output_item_id: recipe.output_item_id,
+      output_item_count: recipe.output_item_count,
+      ingredients: recipe.ingredients.map((ing) => ({
+        id: ing.id,
+        count: ing.count,
+        type: ing.type,
+      })),
+      name: recipe.name,
+    } as Recipe);
+  });
+
+  return allRecipes;
 }
-
-export type GW2ItemListing = {
-  id: number;
-  buys?: GW2TradeListing[];
-  sells?: GW2TradeListing[];
-};
-
-export type GW2TradeListing = {
-  unit_price: number;
-  quantity: number;
-  listings: number;
-};
 
 export type GW2Item = {
   id: number;
@@ -108,6 +108,18 @@ export async function fetchGW2Items(
   return itemsMap;
 }
 
+export type GW2ItemListing = {
+  id: number;
+  buys?: GW2TradeListing[];
+  sells?: GW2TradeListing[];
+};
+
+export type GW2TradeListing = {
+  unit_price: number;
+  quantity: number;
+  listings: number;
+};
+
 export async function fetchGW2ItemsListings(
   ids: number[]
 ): Promise<Record<number, GW2ItemListing>> {
@@ -136,23 +148,48 @@ export async function fetchGW2ItemsListings(
 }
 
 export type CustomRecipe = {
+  id?: number;
   name: string;
   output_item_id: number;
   output_item_count: number;
   ingredients: { id: number; count: number; type: string }[];
   disciplines: string[];
 };
+/**
+ * @returns A List of custom recipes provided by GW2Efficiency.
+ * Contains Mystic Forge recipes and merchant trades.
+ */
 export async function getCustomRecipes(): Promise<CustomRecipe[]> {
   const url =
     "https://raw.githubusercontent.com/gw2efficiency/custom-recipes/schema-update/recipes.json";
 
-  const start = Date.now();
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Failed to fetch custom recipes: ${response.statusText}`);
   }
   const data: CustomRecipe[] = await response.json();
-  const end = Date.now();
-  console.log(`getCustomRecipes took ${end - start}ms`);
+  //Assign unique IDs (negative numbers) to each custom recipe
+  data.forEach((recipe, index) => {
+    recipe.id = -index - 1;
+  });
   return data as CustomRecipe[];
+}
+
+export type GW2Recipe = {
+  id: number;
+  type: string;
+  output_item_id: number;
+  output_item_count: number;
+  flags: string[];
+  ingredients: { item_id: number; count: number }[];
+};
+export async function getAllCraftingRecipes(): Promise<GW2Recipe[]> {
+  const url = "https://api.datawars2.ie/gw2/v2/recipes";
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch all GW2 recipes: ${response.statusText}`);
+  }
+  const data: GW2Recipe[] = await response.json();
+  return data;
 }
