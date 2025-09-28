@@ -2,13 +2,14 @@ import { useState } from "react";
 import { LoadingSpinner } from "../LoadingSpinner";
 import GW2ItemDisplay from "../GW2ItemDisplay";
 import GW2PriceDisplay from "../GW2PriceDisplay";
-import { fetchRecipesDepth } from "../../util/itemTreeUtil";
+import { buildItemTree } from "../../util/itemTreeUtil";
 import type { ItemTree } from "../../util/itemTreeUtil";
 import { useGlobalContext } from "../contexts/GlobalContext";
 import PriceTypeSelector from "../PriceTypeSelector";
 import { useRecipeTreeContext } from "../contexts/RecipeTreeContext";
 
 export function RecipeTreePage() {
+  const { allItemsWithListings } = useGlobalContext();
   const { usedInRecipes } = useRecipeTreeContext();
 
   const {
@@ -27,10 +28,10 @@ export function RecipeTreePage() {
   const handleSearch = async () => {
     setSearching(true);
 
-    const recipesWithDepth = await fetchRecipesDepth(
+    const recipesWithDepth = await buildItemTree(
+      allItemsWithListings ?? {},
       usedInRecipes ?? {},
-      parseInt(searchTerm),
-      Infinity
+      parseInt(searchTerm)
     );
     setItemWithRecipes(recipesWithDepth);
     setSearching(false);
@@ -111,11 +112,8 @@ function ItemTree({ item, depth = 0 }: ItemTreeProps) {
       >
         {item.item && <GW2ItemDisplay item={item.item} showAmount={false} />}
         {item.item && <span>{item.item.name}</span>}
-        {item.itemListing && (
-          <GW2PriceDisplay
-            price={item.itemListing.buys?.[0]?.unit_price ?? -Infinity}
-          />
-        )}
+        {item.buy_price && <GW2PriceDisplay price={item.buy_price} />}
+
         <button
           className='rounded border-2 border-black text-sm'
           onClick={printInformation(item)}
@@ -126,8 +124,12 @@ function ItemTree({ item, depth = 0 }: ItemTreeProps) {
 
       {expanded && item.crafts.length > 0 && (
         <div className='pl-4 border-l border-gray-300'>
-          {item.crafts.map((craft) => (
-            <ItemTree key={craft.itemId} item={craft} depth={depth + 1} />
+          {item.crafts.map((craft, index) => (
+            <ItemTree
+              key={craft.itemId + "-" + index}
+              item={craft}
+              depth={depth + 1}
+            />
           ))}
         </div>
       )}

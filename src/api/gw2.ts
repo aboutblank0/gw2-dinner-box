@@ -100,14 +100,12 @@ export async function fetchGW2Items(
 
     const data: GW2Item[] = await response.json();
     results.push(...data);
-
-    const itemsMap: Record<number, GW2Item> = Object.fromEntries(
-      results.map((item) => [item.id, item])
-    );
-    return itemsMap;
   }
 
-  return results;
+  const itemsMap: Record<number, GW2Item> = Object.fromEntries(
+    results.map((item) => [item.id, item])
+  );
+  return itemsMap;
 }
 
 export async function fetchGW2ItemsListings(

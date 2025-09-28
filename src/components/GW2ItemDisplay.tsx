@@ -10,7 +10,6 @@ import {
 } from "@floating-ui/react";
 import type { GW2Item } from "../api/gw2";
 import { useState } from "react";
-import { useMaterialPromotionContext } from "./contexts/MaterialPromotionPageContext";
 
 interface GW2ItemDisplayProps {
   item: GW2Item;
@@ -23,8 +22,6 @@ function GW2ItemDisplay({
   amount = 1,
   showAmount = true,
 }: GW2ItemDisplayProps) {
-  const { usedInRecipes } = useMaterialPromotionContext();
-
   const [isOpen, setIsOpen] = useState(false);
   const { refs, floatingStyles, context } = useFloating({
     open: isOpen,
@@ -48,10 +45,6 @@ function GW2ItemDisplay({
       item.name
     )}`;
     window.open(wikiUrl, "_blank");
-  };
-
-  const printRecipes = () => {
-    console.log(usedInRecipes?.[item.id]);
   };
 
   return (
@@ -82,12 +75,6 @@ function GW2ItemDisplay({
             className='bg-white rounded-b hover:bg-gray-200 transition-all'
           >
             Open in Wiki
-          </button>
-          <button
-            onClick={printRecipes}
-            className='bg-white rounded-b hover:bg-gray-200 transition-all'
-          >
-            Print recipes
           </button>
         </div>
       )}

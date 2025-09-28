@@ -1,9 +1,8 @@
 import {
   fetchGW2Items,
-  fetchGW2ItemsListings,
   type GW2Item,
-  type GW2ItemListing,
   type GW2Recipe,
+  type ItemWithListing,
 } from "../api/gw2";
 
 export type ItemTree = {
@@ -12,7 +11,8 @@ export type ItemTree = {
   fromRecipe: GW2Recipe;
 
   item?: GW2Item;
-  itemListing?: GW2ItemListing;
+  buy_price?: number;
+  sell_price?: number;
 };
 
 const RECIPE_TYPES = new Set([
@@ -34,10 +34,10 @@ const RECIPE_TYPES = new Set([
   "MysticForge",
 ]);
 
-export async function fetchRecipesDepth(
+export async function buildItemTree(
+  allItemsWithListings: Record<number, ItemWithListing>,
   usedInRecipes: Record<number, GW2Recipe[]>,
-  itemId: number,
-  depth: number
+  itemId: number
 ): Promise<ItemTree> {
   const initialItem = {
     itemId: itemId,
@@ -55,7 +55,7 @@ export async function fetchRecipesDepth(
     allItemIds.add(item.itemId);
     const recipes = usedInRecipes[item.itemId];
 
-    if (recipes && recipes.length > 0 && currentDepth < depth) {
+    if (recipes && recipes.length > 0) {
       for (const recipe of recipes) {
         if (RECIPE_TYPES.has(recipe.type)) {
           const subItem: ItemTree = {
@@ -73,12 +73,16 @@ export async function fetchRecipesDepth(
   await fetchDepth(initialItem, 0);
 
   const itemsData = await fetchGW2Items(Array.from(allItemIds));
-  const itemsListings = await fetchGW2ItemsListings(Array.from(allItemIds));
 
   //recurse through the initialItem and assign the item data
   function assignItemData(item: ItemTree) {
+    if (!itemsData[item.itemId]) {
+      console.warn(`Item data not found for item ID: ${item.itemId}`);
+    }
+
     item.item = itemsData[item.itemId] || undefined;
-    item.itemListing = itemsListings[item.itemId] || undefined;
+    item.buy_price = allItemsWithListings[item.itemId]?.buy_price;
+    item.sell_price = allItemsWithListings[item.itemId]?.sell_price;
     for (const craft of item.crafts) {
       assignItemData(craft);
     }
