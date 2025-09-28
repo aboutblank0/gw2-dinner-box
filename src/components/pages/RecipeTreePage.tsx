@@ -37,14 +37,6 @@ export function RecipeTreePage() {
     setSearching(false);
   };
 
-  if (searching) {
-    return (
-      <div className='p-4'>
-        <LoadingSpinner />
-      </div>
-    );
-  }
-
   return (
     <div className='flex flex-row items-start'>
       <div id='control-bar' className='mb-8 gap-4 min-w-64 sticky top-0'>
@@ -65,23 +57,29 @@ export function RecipeTreePage() {
       </div>
       <div>
         <h1 className='text-2xl font-bold mb-4'>Recipe Tree</h1>
-        <input
-          type='text'
-          placeholder='Search for an item by id...'
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className='border p-2 w-full mb-4'
-        />
-        <button
-          className='bg-blue-500 text-white px-4 py-2 rounded'
-          onClick={handleSearch}
-        >
-          Search
-        </button>
+        {searching ? (
+          <LoadingSpinner />
+        ) : (
+          <>
+            <input
+              type='text'
+              placeholder='Search for an item by id...'
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className='border p-2 w-full mb-4'
+            />
+            <button
+              className='bg-blue-500 text-white px-4 py-2 rounded'
+              onClick={handleSearch}
+            >
+              Search
+            </button>
 
-        <div className='m-8'>
-          {itemWithRecipes && <ItemTree item={itemWithRecipes} />}
-        </div>
+            <div className='m-8'>
+              {itemWithRecipes && <ItemTree item={itemWithRecipes} />}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -124,9 +122,9 @@ function ItemTree({ item, depth = 0 }: ItemTreeProps) {
 
       {expanded && item.crafts.length > 0 && (
         <div className='pl-4 border-l border-gray-300'>
-          {item.crafts.map((craft, index) => (
+          {item.crafts.map((craft) => (
             <ItemTree
-              key={craft.itemId + "-" + index}
+              key={craft.fromRecipe.id + "-" + craft.itemId}
               item={craft}
               depth={depth + 1}
             />

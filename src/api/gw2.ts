@@ -53,9 +53,6 @@ export async function getAllRecipes(): Promise<Record<number, Recipe>> {
   });
 
   customRecipes.forEach((recipe) => {
-    // Some items have weirdly large IDs (not sure why), ignore them
-    if (recipe.output_item_id < 1000000) return;
-
     allRecipes.push({
       id: recipe.id,
       output_item_id: recipe.output_item_id,
