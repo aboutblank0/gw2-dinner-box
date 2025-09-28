@@ -7,6 +7,7 @@ import type { ItemTree } from "../../util/itemTreeUtil";
 import { useGlobalContext } from "../contexts/GlobalContext";
 import PriceTypeSelector from "../PriceTypeSelector";
 import { useRecipeTreeContext } from "../contexts/RecipeTreeContext";
+import GW2ItemSearch from "../GW2ItemSearch";
 
 export function RecipeTreePage() {
   const { allItemsWithListings } = useGlobalContext();
@@ -19,19 +20,18 @@ export function RecipeTreePage() {
     setResultPriceType,
   } = useGlobalContext();
 
-  const [searchTerm, setSearchTerm] = useState("");
   const [searching, setSearching] = useState(false);
   const [itemWithRecipes, setItemWithRecipes] = useState<ItemTree | undefined>(
     undefined
   );
 
-  const handleSearch = async () => {
+  const searchItem = async (itemId: number) => {
     setSearching(true);
 
     const recipesWithDepth = await buildItemTree(
       allItemsWithListings ?? {},
       usedInRecipes ?? {},
-      parseInt(searchTerm)
+      itemId
     );
     setItemWithRecipes(recipesWithDepth);
     setSearching(false);
@@ -53,32 +53,18 @@ export function RecipeTreePage() {
             isIngredient={false}
             onSelect={setResultPriceType}
           />
+          <p>TODO: Add something here to show/hide untradeable options</p>
         </div>
       </div>
-      <div>
+      <div className='p-4 w-full'>
         <h1 className='text-2xl font-bold mb-4'>Recipe Tree</h1>
+        <GW2ItemSearch onItemSelect={searchItem} />
         {searching ? (
           <LoadingSpinner />
         ) : (
-          <>
-            <input
-              type='text'
-              placeholder='Search for an item by id...'
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className='border p-2 w-full mb-4'
-            />
-            <button
-              className='bg-blue-500 text-white px-4 py-2 rounded'
-              onClick={handleSearch}
-            >
-              Search
-            </button>
-
-            <div className='m-8'>
-              {itemWithRecipes && <ItemTree item={itemWithRecipes} />}
-            </div>
-          </>
+          <div className='m-8'>
+            {itemWithRecipes && <ItemTree item={itemWithRecipes} />}
+          </div>
         )}
       </div>
     </div>
