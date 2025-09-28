@@ -47,6 +47,20 @@ function GW2ItemDisplay({
     window.open(wikiUrl, "_blank");
   };
 
+  const openInGW2Efficiency = () => {
+    const gweUrl = `https://gw2efficiency.com/crafting/calculator/a~0!b~1!c~0!d~1-${encodeURIComponent(
+      item.id
+    )}!e~0`;
+    window.open(gweUrl, "_blank");
+  };
+
+  const openInGW2BLTC = () => {
+    const bltcUrl = `https://www.gw2bltc.com/item/${encodeURIComponent(
+      item.id
+    )}`;
+    window.open(bltcUrl, "_blank");
+  };
+
   return (
     <button
       ref={refs.setReference}
@@ -64,7 +78,7 @@ function GW2ItemDisplay({
           ref={refs.setFloating}
           style={floatingStyles}
           {...getFloatingProps()}
-          className='z-10 shadow-lg flex flex-col opacity-90 min-w-64'
+          className='z-10 shadow-lg flex flex-col min-w-64 drop-shadow-2xl border-1 p2 rounded'
         >
           <span className='px-2 font-bold bg-gray-400 rounded-t'>
             {item.name} ({item.id})
@@ -75,6 +89,18 @@ function GW2ItemDisplay({
             className='bg-white rounded-b hover:bg-gray-200 transition-all'
           >
             Open in Wiki
+          </button>
+          <button
+            onClick={openInGW2Efficiency}
+            className='bg-white rounded-b hover:bg-gray-200 transition-all'
+          >
+            Open in GW2Efficiency
+          </button>
+          <button
+            onClick={openInGW2BLTC}
+            className='bg-white rounded-b hover:bg-gray-200 transition-all'
+          >
+            Open in GW2BLTC
           </button>
         </div>
       )}
