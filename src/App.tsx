@@ -8,33 +8,31 @@ import { RecipeTreeContextProvider } from "./components/contexts/RecipeTreeConte
 
 function App() {
   return (
-    <div>
-      <GlobalContextProvider>
-        <NavBar />
+    <GlobalContextProvider>
+      <NavBar />
 
-        <Routes>
-          <Route path='/' element={<Navigate to='/material-promotion' />} />
+      <Routes>
+        <Route path='/' element={<Navigate to='/material-promotion' />} />
 
-          <Route
-            path='/material-promotion/*'
-            element={
-              <MaterialPromotionContextProvider>
-                <MaterialPromotionPage />
-              </MaterialPromotionContextProvider>
-            }
-          />
+        <Route
+          path='/material-promotion/*'
+          element={
+            <MaterialPromotionContextProvider>
+              <MaterialPromotionPage />
+            </MaterialPromotionContextProvider>
+          }
+        />
 
-          <Route
-            path='/recipe-tree/*'
-            element={
-              <RecipeTreeContextProvider>
-                <RecipeTreePage />
-              </RecipeTreeContextProvider>
-            }
-          />
-        </Routes>
-      </GlobalContextProvider>
-    </div>
+        <Route
+          path='/recipe-tree/*'
+          element={
+            <RecipeTreeContextProvider>
+              <RecipeTreePage />
+            </RecipeTreeContextProvider>
+          }
+        />
+      </Routes>
+    </GlobalContextProvider>
   );
 }
 
