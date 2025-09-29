@@ -62,8 +62,9 @@ function GW2ItemDisplay({
   };
 
   return (
-    <button
+    <div
       ref={refs.setReference}
+      onClick={(e) => e.preventDefault()}
       className='relative inline-block group'
       {...getReferenceProps()}
     >
@@ -104,7 +105,7 @@ function GW2ItemDisplay({
           </button>
         </div>
       )}
-    </button>
+    </div>
   );
 }
 

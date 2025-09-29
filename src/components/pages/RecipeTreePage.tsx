@@ -94,7 +94,7 @@ function ItemTree({ item, depth = 0 }: ItemTreeProps) {
     <div className='ml-4'>
       <div
         onClick={() => item.crafts.length > 0 && setExpanded((prev) => !prev)}
-        className={`flex items-center space-x-2 ${
+        className={`flex items-center gap-2 ${
           item.crafts.length > 0 ? "cursor-pointer" : ""
         }`}
       >
@@ -102,12 +102,12 @@ function ItemTree({ item, depth = 0 }: ItemTreeProps) {
         {item.item && <span>{item.item.name}</span>}
         {item.buy_price && <GW2PriceDisplay price={item.buy_price} />}
 
-        <button
+        <div
           className='rounded border-2 border-black text-sm'
           onClick={printInformation(item)}
         >
           Print information
-        </button>
+        </div>
       </div>
 
       {expanded && item.crafts.length > 0 && (

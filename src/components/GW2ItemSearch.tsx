@@ -104,7 +104,6 @@ export default function GW2ItemSearch({
   const onSelect = (option: Option) => {
     if (onItemSelect) onItemSelect(option.item_id);
     setShowDropdown(false);
-    console.log("setting query to", option.name);
     setQuery(option.name);
   };
 
@@ -121,7 +120,7 @@ export default function GW2ItemSearch({
       {showDropdown && matchedOptions.length > 0 && (
         <ul
           ref={refs.setFloating}
-          className='z-10 shadow-lg flex w-128 flex-col border-1 p2 rounded'
+          className='bg-white z-10 shadow-lg flex w-128 flex-col border-1 p2 rounded'
           style={floatingStyles}
           {...getFloatingProps()}
         >
