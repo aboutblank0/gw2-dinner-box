@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
   fetchGW2Items,
   fetchGW2ItemsListings,
   type GW2Item,
   type GW2ItemListing,
-  type GW2Recipe,
 } from "../../api/gw2";
 import { Materials, PhilosopherStone } from "../../constants/materials";
 import { getPriceSummary, type PriceSummary } from "../../util/marketUtil";

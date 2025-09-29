@@ -6,4 +6,5 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   assetsInclude: ["**/*.png"],
   plugins: [react(), tailwindcss()],
+  base: "/gw2-dinner-box/",
 });

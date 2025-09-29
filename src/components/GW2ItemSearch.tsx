@@ -4,7 +4,6 @@ import { fetchGW2Items } from "../api/gw2";
 import {
   autoUpdate,
   flip,
-  offset,
   shift,
   useFloating,
   useFocus,
