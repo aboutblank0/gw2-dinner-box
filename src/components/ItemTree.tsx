@@ -10,7 +10,7 @@ type ItemTreeProps = {
 };
 
 export default function ItemTreeDisplay({ item, depth = 0 }: ItemTreeProps) {
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, _] = useState(true);
 
   const printInformation = (item: ItemTree) => () => {
     console.log("Item ID:", item.itemId);

@@ -13,7 +13,6 @@ import {
 type Option = {
   name: string;
   item_id: number;
-  icon?: string;
 };
 
 interface GW2ItemSearchProps {
@@ -29,6 +28,7 @@ export default function GW2ItemSearch({
   const [query, setQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [matchedOptions, setMatchedOptions] = useState<Option[]>([]);
+  const [icons, setIcons] = useState<Record<number, string>>({});
   const debounceTimeout = useRef<number | null>(null);
 
   const { refs, floatingStyles, context } = useFloating({
@@ -61,12 +61,12 @@ export default function GW2ItemSearch({
 
       if (isCancelled) return;
 
-      setMatchedOptions((prevOptions) =>
-        prevOptions.map((option) => {
-          const item = itemData[option.item_id];
-          return item ? { ...option, icon: item.icon } : option;
-        })
-      );
+      const newIcons = {} as Record<number, string>;
+      for (const [id, item] of Object.entries(itemData)) {
+        const iconUrl = item.icon;
+        newIcons[Number(id)] = iconUrl;
+      }
+      setIcons(newIcons);
     }
 
     fetchIcons();
@@ -130,9 +130,9 @@ export default function GW2ItemSearch({
               className='hover:bg-gray-100 cursor-pointer'
               onClick={() => onSelect(option)}
             >
-              {option.icon ? (
+              {icons[option.item_id] ? (
                 <img
-                  src={option.icon}
+                  src={icons[option.item_id]}
                   alt={option.name}
                   width={32}
                   height={32}

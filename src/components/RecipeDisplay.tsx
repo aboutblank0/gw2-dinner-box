@@ -32,6 +32,7 @@ export default function RecipeDisplay({ recipe }: RecipeDisplayProps) {
           <>
             {ing.type === "Currency" ? (
               <GW2CurrencyDisplay
+                key={recipe.id}
                 currency={allCurrencies[ing.id]}
                 amount={ing.count}
                 showAmount={true}
