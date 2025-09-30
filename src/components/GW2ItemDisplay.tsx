@@ -12,7 +12,7 @@ import type { GW2Item } from "../api/gw2";
 import { useState } from "react";
 
 interface GW2ItemDisplayProps {
-  item: GW2Item;
+  item?: GW2Item;
   amount?: number;
   showAmount?: boolean;
 }
@@ -38,7 +38,7 @@ function GW2ItemDisplay({
     focus,
   ]);
 
-  if (!item) return null;
+  if (!item) return <img src='' alt='Missing item' />;
 
   const openInWiki = () => {
     const wikiUrl = `https://wiki.guildwars2.com/wiki/${encodeURIComponent(

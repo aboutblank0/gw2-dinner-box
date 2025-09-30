@@ -28,7 +28,8 @@ export type Recipe = {
   id: number;
   output_item_id: number;
   output_item_count: number;
-  ingredients: { id: number; count: number; type?: string }[];
+  ingredients: { id: number; count: number; type?: string; item?: GW2Item }[];
+  disciplines: string[];
   flags?: string[];
   type?: string;
   name?: string;
@@ -47,6 +48,7 @@ export async function getAllRecipes(): Promise<Record<number, Recipe>> {
         id: ing.item_id,
         count: ing.count,
       })),
+      disciplines: recipe.disciplines,
       flags: recipe.flags,
       type: recipe.type,
     } as Recipe);
@@ -63,6 +65,7 @@ export async function getAllRecipes(): Promise<Record<number, Recipe>> {
         type: ing.type,
       })),
       name: recipe.name,
+      disciplines: recipe.disciplines,
     } as Recipe);
   });
 
@@ -179,6 +182,7 @@ export type GW2Recipe = {
   output_item_count: number;
   flags: string[];
   ingredients: { item_id: number; count: number }[];
+  disciplines: string[];
 };
 export async function getAllCraftingRecipes(): Promise<GW2Recipe[]> {
   const url = "https://api.datawars2.ie/gw2/v2/recipes";
@@ -189,4 +193,33 @@ export async function getAllCraftingRecipes(): Promise<GW2Recipe[]> {
   }
   const data: GW2Recipe[] = await response.json();
   return data;
+}
+
+export type GW2Currency = {
+  id: number;
+  name: string;
+  description: string;
+  icon: string;
+  order: number;
+};
+export async function getAllCurrencies(): Promise<Record<number, GW2Currency>> {
+  const url = `${BASE_URL}/currencies`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch currencies: ${response.statusText}`);
+  }
+  const currencyIds: number[] = await response.json();
+
+  const urlDetails = `${BASE_URL}/currencies?ids=${currencyIds.join(",")}`;
+  const responseDetails = await fetch(urlDetails);
+  if (!responseDetails.ok) {
+    throw new Error(
+      `Failed to fetch currency details: ${responseDetails.statusText}`
+    );
+  }
+  const currencies = await responseDetails.json();
+  const currencyMap: Record<number, GW2Currency> = Object.fromEntries(
+    currencies.map((currency: GW2Currency) => [currency.id, currency])
+  );
+  return currencyMap;
 }

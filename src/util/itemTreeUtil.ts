@@ -29,6 +29,8 @@ export async function buildItemTree(
   const allItemIds = new Set<number>();
   allItemIds.add(itemId);
 
+  const ingredientIds = new Set<number>();
+
   async function fetchDepth(item: ItemTree, currentDepth: number) {
     if (allItemIds.has(item.itemId) && currentDepth > 0) {
       return; // Prevent cycles
@@ -44,7 +46,7 @@ export async function buildItemTree(
 
         //Add material IDs to the set so we can also get their image, etc
         for (const ing of recipe.ingredients) {
-          allItemIds.add(ing.id);
+          ingredientIds.add(ing.id);
         }
 
         const subItem: ItemTree = {
@@ -93,19 +95,21 @@ export async function buildItemTree(
   function collectFilteredItemIds(item: ItemTree) {
     filteredItemIds.add(item.itemId);
 
-    //TODO: Currently this would just be ignored
-    // Need to somehow extract all of the items out so they can be displayed later in a recipe
-
-    // //Also add ingredient IDs from the recipe, since we want to display them at one point.
-    // for (const ing of item.fromRecipe.ingredients) {
-    //   filteredItemIds.add(ing.id);
-    // }
+    //Also add ingredient IDs from the recipe, since we want to display them at one point.
+    if (item.fromRecipe && item.fromRecipe.ingredients)
+      for (const ing of item.fromRecipe.ingredients)
+        filteredItemIds.add(ing.id);
 
     for (const craft of item.crafts) {
       collectFilteredItemIds(craft);
     }
   }
   collectFilteredItemIds(initialItem);
+
+  //combine filteredItemIds with ingredientIds to ensure we fetch all ingredients too
+  for (const ingId of ingredientIds) {
+    filteredItemIds.add(ingId);
+  }
 
   //fetch the item data for all items in the filtered tree
   const itemsData = await fetchGW2Items(Array.from(filteredItemIds));
@@ -116,6 +120,10 @@ export async function buildItemTree(
     for (const craft of item.crafts) {
       assignItemData(craft);
     }
+
+    if (item.fromRecipe && item.fromRecipe.ingredients)
+      for (const ing of item.fromRecipe.ingredients)
+        ing.item = itemsData[ing.id] || undefined;
   }
 
   assignItemData(initialItem);

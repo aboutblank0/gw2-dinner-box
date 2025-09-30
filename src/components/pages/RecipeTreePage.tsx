@@ -8,6 +8,7 @@ import { useGlobalContext } from "../contexts/GlobalContext";
 import PriceTypeSelector from "../PriceTypeSelector";
 import { useRecipeTreeContext } from "../contexts/RecipeTreeContext";
 import GW2ItemSearch from "../GW2ItemSearch";
+import RecipeDisplay from "../RecipeDisplay";
 
 export function RecipeTreePage() {
   const { allItemsWithListings } = useGlobalContext();
@@ -102,11 +103,13 @@ function ItemTree({ item, depth = 0 }: ItemTreeProps) {
         {item.item && <span>{item.item.name}</span>}
         {item.buy_price && <GW2PriceDisplay price={item.buy_price} />}
 
+        <RecipeDisplay recipe={item.fromRecipe} />
+
         <div
           className='rounded border-2 border-black text-sm'
           onClick={printInformation(item)}
         >
-          Print information
+          Info
         </div>
       </div>
 
