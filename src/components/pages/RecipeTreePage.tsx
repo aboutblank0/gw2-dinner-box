@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { LoadingSpinner } from "../LoadingSpinner";
 import { buildItemTree } from "../../util/itemTreeUtil";
 import type { ItemTree } from "../../util/itemTreeUtil";
@@ -21,20 +21,22 @@ export function RecipeTreePage() {
   } = useGlobalContext();
 
   const [searching, setSearching] = useState(false);
-  const [itemWithRecipes, setItemWithRecipes] = useState<ItemTree | undefined>(
-    undefined
-  );
+  const [showUntradeable, setShowUntradeable] = useState(false);
+  const [itemTree, setItemTree] = useState<ItemTree | undefined>(undefined);
 
   const searchItem = async (itemId: number) => {
+    if (searching) return;
     setSearching(true);
 
-    const recipesWithDepth = await buildItemTree(
+    const itemTree = await buildItemTree(
       allItemsWithListings ?? {},
       usedInRecipes ?? {},
       itemId,
-      fetchItems
+      fetchItems,
+      !showUntradeable
     );
-    setItemWithRecipes(recipesWithDepth);
+
+    setItemTree(itemTree);
     setSearching(false);
   };
 
@@ -54,7 +56,22 @@ export function RecipeTreePage() {
             isIngredient={false}
             onSelect={setResultPriceType}
           />
-          <p>TODO: Add something here to show/hide untradeable options</p>
+          <div className='inline-block mr-4'>
+            <div className='bg-gray-400 w-full p-1 rounded-t'>
+              Show Untradeable ?
+            </div>
+            <div className='flex flex-col gap-2 bg-gray-200 p-2 rounded-b'>
+              <label>
+                <input
+                  className='bg-red-200 rounded-r p-1 ml-1 mr-1'
+                  type='checkbox'
+                  checked={showUntradeable}
+                  onChange={() => setShowUntradeable(!showUntradeable)}
+                />
+                (may be much slower)
+              </label>
+            </div>
+          </div>
           <p>TODO: Add a feature to estimate price of account bound item</p>
         </div>
       </div>
@@ -65,7 +82,7 @@ export function RecipeTreePage() {
           <LoadingSpinner />
         ) : (
           <div className='m-8'>
-            {itemWithRecipes && <ItemTreeDisplay item={itemWithRecipes} />}
+            {itemTree && <ItemTreeDisplay item={itemTree} />}
           </div>
         )}
       </div>
