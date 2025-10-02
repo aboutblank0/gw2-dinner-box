@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { use, useEffect, useState } from "react";
 import {
   T1toT2Recipes,
   T2toT3Recipes,
@@ -11,8 +11,10 @@ import { useMaterialPromotionContext } from "../contexts/MaterialPromotionPageCo
 import { RecipeTable } from "../RecipeTable";
 import { useGlobalContext } from "../contexts/GlobalContext";
 import PriceTypeSelector from "../PriceTypeSelector";
+import { PhilosopherStone } from "../../constants/materials";
 
 function MaterialPromotionPage() {
+  const { fetchItems } = useGlobalContext();
   const { updateItemPrices } = useMaterialPromotionContext();
 
   const {
@@ -21,6 +23,12 @@ function MaterialPromotionPage() {
     resultPriceType,
     setResultPriceType,
   } = useGlobalContext();
+
+  useEffect(() => {
+    //Materials are already fetched on init in GlobalContext.
+    //But not Philosopher's Stone, so we fetch it here.
+    fetchItems([PhilosopherStone.id]);
+  }, []);
 
   const [marketDepth, setMarketDepth] = useState(100);
 

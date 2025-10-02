@@ -50,10 +50,10 @@ interface RecipeRowProps {
 }
 
 function RecipeRow({ recipe }: RecipeRowProps) {
-  const { ingredientPriceType, resultPriceType } = useGlobalContext();
-  const { items, prices } = useMaterialPromotionContext();
+  const { itemMap, ingredientPriceType, resultPriceType } = useGlobalContext();
+  const { prices } = useMaterialPromotionContext();
 
-  if (!items || !prices) return null;
+  if (!itemMap || !prices) return null;
 
   //get the total price for buy listing of all ingredients
   const totalPrice = recipe.ingredients.reduce((sum, ing) => {
@@ -91,7 +91,8 @@ function RecipeRow({ recipe }: RecipeRowProps) {
     <tr>
       <td className='px-6 py-4 whitespace-nowrap flex flex-row'>
         {recipe.ingredients.map((ing) => {
-          const item = items[ing.materialId];
+          const item = itemMap[ing.materialId];
+          if (!item) return null;
           return (
             <GW2ItemDisplay key={item.id} item={item} amount={ing.quantity} />
           );
@@ -99,7 +100,7 @@ function RecipeRow({ recipe }: RecipeRowProps) {
       </td>
       <td className='px-6 py-4 whitespace-nowrap'>
         <GW2ItemDisplay
-          item={items[recipe.output.materialId]}
+          item={itemMap[recipe.output.materialId]}
           amount={recipe.output.quantity}
         />
       </td>

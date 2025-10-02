@@ -1,6 +1,5 @@
 import { useMemo, useState, useRef, useEffect } from "react";
 import { useGlobalContext } from "./contexts/GlobalContext";
-import { fetchGW2Items } from "../api/gw2";
 import {
   autoUpdate,
   flip,
@@ -24,7 +23,7 @@ export default function GW2ItemSearch({
   onItemSelect,
   debounceTime = 300,
 }: GW2ItemSearchProps) {
-  const { allItemsWithListings } = useGlobalContext();
+  const { itemMap, fetchItems, allItemsWithListings } = useGlobalContext();
   const [query, setQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [matchedOptions, setMatchedOptions] = useState<Option[]>([]);
@@ -43,38 +42,38 @@ export default function GW2ItemSearch({
 
   const options: Option[] = useMemo(() => {
     if (!allItemsWithListings) return [];
-    return Object.values(allItemsWithListings).map((item) => ({
-      name: item.name,
-      item_id: item.id,
-    }));
-  }, [allItemsWithListings]);
+    const allOptions: Option[] = [];
 
-  // ✅ Fetch item icons whenever matchedOptions changes
+    // create options from item map
+    for (const [id, item] of Object.entries(allItemsWithListings)) {
+      allOptions.push({ name: item.name, item_id: Number(id) });
+    }
+    // create options from itemMap for items not in allItemsWithListings
+    for (const [id, item] of Object.entries(itemMap)) {
+      if (!allItemsWithListings[Number(id)]) {
+        allOptions.push({ name: item.name, item_id: Number(id) });
+      }
+    }
+    return allOptions;
+  }, [allItemsWithListings, itemMap]);
+
+  // Fetch items whenever matchedOptions changes
   useEffect(() => {
     if (matchedOptions.length === 0) return;
 
-    let isCancelled = false;
-
-    async function fetchIcons() {
-      const itemIds = matchedOptions.map((option) => option.item_id);
-      const itemData = await fetchGW2Items(itemIds);
-
-      if (isCancelled) return;
-
-      const newIcons = {} as Record<number, string>;
-      for (const [id, item] of Object.entries(itemData)) {
-        const iconUrl = item.icon;
-        newIcons[Number(id)] = iconUrl;
-      }
-      setIcons(newIcons);
-    }
-
-    fetchIcons();
-
-    return () => {
-      isCancelled = true;
-    };
+    const itemIds = matchedOptions.map((option) => option.item_id);
+    fetchItems(itemIds);
   }, [matchedOptions]);
+
+  //Assign icons whenever itemMap updates from the above call
+  useEffect(() => {
+    const newIcons = {} as Record<number, string>;
+    for (const [id, item] of Object.entries(itemMap)) {
+      const iconUrl = item.icon;
+      newIcons[Number(id)] = iconUrl;
+    }
+    setIcons(newIcons);
+  }, [itemMap]);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);

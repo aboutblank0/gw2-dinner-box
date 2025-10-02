@@ -1,9 +1,4 @@
-import {
-  fetchGW2Items,
-  type GW2Item,
-  type ItemWithListing,
-  type Recipe,
-} from "../api/gw2";
+import { type GW2Item, type ItemWithListing, type Recipe } from "../api/gw2";
 
 export type ItemTree = {
   itemId: number;
@@ -18,7 +13,9 @@ export type ItemTree = {
 export async function buildItemTree(
   allItemsWithListings: Record<number, ItemWithListing>,
   usedInRecipes: Record<number, Recipe[]>,
-  itemId: number
+  itemId: number,
+  fetchItemsFunc: (ids: number[]) => Promise<Record<number, GW2Item>>,
+  onlyTradeable: boolean = true
 ): Promise<ItemTree> {
   const initialItem = {
     itemId: itemId,
@@ -89,7 +86,7 @@ export async function buildItemTree(
       item.sell_price !== undefined
     );
   }
-  filterNonTradablePaths(initialItem);
+  if (onlyTradeable) filterNonTradablePaths(initialItem);
 
   const filteredItemIds = new Set<number>();
   function collectFilteredItemIds(item: ItemTree) {
@@ -112,7 +109,7 @@ export async function buildItemTree(
   }
 
   //fetch the item data for all items in the filtered tree
-  const itemsData = await fetchGW2Items(Array.from(filteredItemIds));
+  const itemsData = await fetchItemsFunc(Array.from(filteredItemIds));
 
   //recurse through the initialItem and assign the item data
   function assignItemData(item: ItemTree) {

@@ -13,6 +13,7 @@ export function RecipeTreePage() {
   const { usedInRecipes } = useRecipeTreeContext();
 
   const {
+    fetchItems,
     ingredientPriceType,
     setIngredientPriceType,
     resultPriceType,
@@ -30,7 +31,8 @@ export function RecipeTreePage() {
     const recipesWithDepth = await buildItemTree(
       allItemsWithListings ?? {},
       usedInRecipes ?? {},
-      itemId
+      itemId,
+      fetchItems
     );
     setItemWithRecipes(recipesWithDepth);
     setSearching(false);
@@ -53,10 +55,7 @@ export function RecipeTreePage() {
             onSelect={setResultPriceType}
           />
           <p>TODO: Add something here to show/hide untradeable options</p>
-          <p>
-            TODO: Item search does not have EVERY item. need better source for
-            all item/names.
-          </p>
+          <p>TODO: Add a feature to estimate price of account bound item</p>
         </div>
       </div>
       <div className='p-4 w-full'>

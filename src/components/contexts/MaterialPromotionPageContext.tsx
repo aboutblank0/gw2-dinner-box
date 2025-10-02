@@ -1,15 +1,9 @@
 import React, { useEffect } from "react";
-import {
-  fetchGW2Items,
-  fetchGW2ItemsListings,
-  type GW2Item,
-  type GW2ItemListing,
-} from "../../api/gw2";
+import { fetchGW2ItemsListings, type GW2ItemListing } from "../../api/gw2";
 import { Materials, PhilosopherStone } from "../../constants/materials";
 import { getPriceSummary, type PriceSummary } from "../../util/marketUtil";
 
 interface MaterialPromotionContextType {
-  items?: Record<number, GW2Item>;
   prices?: Record<number, PriceSummary>;
   updateItemPrices: (depth: number) => void;
 }
@@ -23,9 +17,6 @@ export default MaterialPromotionContext;
 export const MaterialPromotionContextProvider: React.FC<
   React.PropsWithChildren<{}>
 > = ({ children }) => {
-  const [items, setItems] = React.useState<Record<number, GW2Item> | undefined>(
-    undefined
-  );
   const [prices, setPrices] = React.useState<
     Record<number, PriceSummary> | undefined
   >(undefined);
@@ -41,15 +32,6 @@ export const MaterialPromotionContextProvider: React.FC<
   allMaterialIds.push(PhilosopherStone.id);
 
   useEffect(() => {
-    async function fetchItems() {
-      try {
-        const itemsMap = await fetchGW2Items(allMaterialIds);
-        setItems(itemsMap);
-      } catch (error) {
-        console.error("Error fetching GW2 items:", error);
-      }
-    }
-
     async function fetchPrices() {
       try {
         const prices = await fetchGW2ItemsListings(allMaterialIds);
@@ -59,7 +41,6 @@ export const MaterialPromotionContextProvider: React.FC<
       }
     }
 
-    fetchItems();
     fetchPrices();
   }, []);
 
@@ -80,7 +61,6 @@ export const MaterialPromotionContextProvider: React.FC<
   );
 
   const contextValue: MaterialPromotionContextType = {
-    items,
     prices,
     updateItemPrices,
   };

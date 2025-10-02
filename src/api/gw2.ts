@@ -95,7 +95,8 @@ export async function fetchGW2Items(
 
     const response = await fetch(url);
     if (!response.ok) {
-      throw new Error(`Failed to fetch GW2 items: ${response.statusText}`);
+      console.warn(`Failed to fetch items: ${response.statusText}`);
+      continue;
     }
 
     const data: GW2Item[] = await response.json();
@@ -222,4 +223,32 @@ export async function getAllCurrencies(): Promise<Record<number, GW2Currency>> {
     currencies.map((currency: GW2Currency) => [currency.id, currency])
   );
   return currencyMap;
+}
+
+type GW2MaterialGroup = {
+  id: number;
+  name: string;
+  order: number;
+  items: number[];
+};
+export async function getAllMaterials(): Promise<Record<number, GW2Item>> {
+  const materialIdsUrl = `${BASE_URL}/materials`;
+  const response = await fetch(materialIdsUrl);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch material IDs: ${response.statusText}`);
+  }
+  const materialIds: number[] = await response.json();
+
+  const materialItemIdsResponse = await fetch(
+    `${BASE_URL}/materials?ids=${materialIds.join(",")}`
+  );
+  if (!materialItemIdsResponse.ok) {
+    throw new Error(
+      `Failed to fetch material item IDs: ${materialItemIdsResponse.statusText}`
+    );
+  }
+  const materialGroups: GW2MaterialGroup[] =
+    await materialItemIdsResponse.json();
+
+  return fetchGW2Items(materialGroups.flatMap((group) => group.items));
 }
